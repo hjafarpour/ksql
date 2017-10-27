@@ -1,9 +1,21 @@
-package io.confluent.ksql.physical.physicalplan;
+package io.confluent.ksql.physical.cost;
+
+import io.confluent.ksql.physical.physicalplan.AggregatePhysicalPlanNode;
+import io.confluent.ksql.physical.physicalplan.BroadcastJoinPhysicalPlanNode;
+import io.confluent.ksql.physical.physicalplan.FilterPhysicalPlanNode;
+import io.confluent.ksql.physical.physicalplan.HashJoinPhysicalPlanNode;
+import io.confluent.ksql.physical.physicalplan.OutputPhysicalPlanNode;
+import io.confluent.ksql.physical.physicalplan.PhysicalPlanNode;
+import io.confluent.ksql.physical.physicalplan.PhysicalPlanVisitor;
+import io.confluent.ksql.physical.physicalplan.ProjectPhysicalPlanNode;
+import io.confluent.ksql.physical.physicalplan.StreamPhysicalPlanNode;
+import io.confluent.ksql.physical.physicalplan.TablePhysicalPlanNode;
 
 /**
- * Created by hojjat on 10/26/17.
+ * Created by hojjat on 10/27/17.
  */
-public class PhysicalPlanVisitor<C, R> {
+public class CostEstimator<C, R> extends PhysicalPlanVisitor<C, R> {
+
   protected R visitPhysicalPlanNode(PhysicalPlanNode node, C context) {
     return null;
   }
@@ -43,5 +55,6 @@ public class PhysicalPlanVisitor<C, R> {
   public R visitTablePhysicalPlanNode(TablePhysicalPlanNode node, C context) {
     return visitPhysicalPlanNode(node, context);
   }
+
 
 }

@@ -22,6 +22,10 @@ public class PlanVisitor<C, R> {
     return null;
   }
 
+  public R process(PlanNode node, C context) {
+    return node.accept(this, context);
+  }
+
   public R visitFilter(FilterNode node, C context) {
     return visitPlan(node, context);
   }

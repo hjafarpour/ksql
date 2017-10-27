@@ -129,4 +129,9 @@ public class JoinNode extends PlanNode {
   public boolean isLeftJoin() {
     return type == Type.LEFT;
   }
+
+  @Override
+  public <C, R> R accept(PlanVisitor<C, R> visitor, C context) {
+    return visitor.visitJoin(this, context);
+  }
 }
