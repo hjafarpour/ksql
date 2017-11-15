@@ -28,6 +28,7 @@ import io.confluent.ksql.function.udf.math.CeilKudf;
 import io.confluent.ksql.function.udf.math.FloorKudf;
 import io.confluent.ksql.function.udf.math.RandomKudf;
 import io.confluent.ksql.function.udf.math.RoundKudf;
+import io.confluent.ksql.function.udf.ml.AnomalyKudf;
 import io.confluent.ksql.function.udf.string.ConcatKudf;
 import io.confluent.ksql.function.udf.string.IfNullKudf;
 import io.confluent.ksql.function.udf.string.LCaseKudf;
@@ -150,6 +151,15 @@ public class FunctionRegistry {
         Schema.STRING_SCHEMA, Arrays.asList(Schema.STRING_SCHEMA, Schema.STRING_SCHEMA),
         "EXTRACTJSONFIELD", JsonExtractStringKudf.class);
     addFunction(getStringFromJson);
+
+    /***************************************
+     * ML functions                     *
+     ****************************************/
+
+    KsqlFunction getAnomolyMl = new KsqlFunction(
+        Schema.STRING_SCHEMA, Arrays.asList(Schema.STRING_SCHEMA),
+        "ANOMALY", AnomalyKudf.class);
+    addFunction(getAnomolyMl);
 
 
     /***************************************

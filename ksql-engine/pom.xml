@@ -83,6 +83,17 @@
             <artifactId>janino</artifactId>
         </dependency>
 
+
+        <!-- https://mvnrepository.com/artifact/ai.h2o/h2o-genmodel -->
+        <dependency>
+            <groupId>ai.h2o</groupId>
+            <artifactId>h2o-genmodel</artifactId>
+            <version>3.14.0.7</version>
+            <!--<type>pom</type>-->
+            <!--<scope>runtime</scope>-->
+        </dependency>
+
+
         <!-- Required for running tests -->
         <dependency>
             <groupId>org.apache.curator</groupId>
