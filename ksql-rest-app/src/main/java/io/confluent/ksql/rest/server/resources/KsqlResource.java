@@ -312,6 +312,17 @@ public class KsqlResource {
 
   private boolean isExecutableDdlStatement(Statement statement) {
     return statement instanceof DdlStatement && !(statement instanceof SetProperty);
+
+  }
+
+  /**
+   * Validate the statement by creating the execution plan for it.
+   */
+  private void validateStatement(
+      Statement statement, String statementText,
+      Map<String, Object> streamsProperties
+  ) throws KsqlException {
+    getStatementExecutionPlan( statement, statementText, streamsProperties);
   }
 
   private CommandStatusEntity distributeStatement(
