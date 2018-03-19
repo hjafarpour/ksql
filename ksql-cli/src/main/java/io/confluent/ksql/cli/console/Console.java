@@ -208,6 +208,8 @@ public abstract class Console implements Closeable {
     registerCliSpecificCommand(new Version());
 
     registerCliSpecificCommand(new Exit());
+
+    cliSpecificCommands.put("exit;", new Exit());
   }
 
 
