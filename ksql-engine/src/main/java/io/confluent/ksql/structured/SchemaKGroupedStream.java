@@ -64,6 +64,18 @@ public class SchemaKGroupedStream {
     return keyField;
   }
 
+  public Schema getSchema() {
+    return schema;
+  }
+
+  public KGroupedStream getKgroupedStream() {
+    return kgroupedStream;
+  }
+
+  public List<SchemaKStream> getSourceSchemaKStreams() {
+    return sourceSchemaKStreams;
+  }
+
   @SuppressWarnings("unchecked")
   public SchemaKTable aggregate(
       final Initializer initializer,

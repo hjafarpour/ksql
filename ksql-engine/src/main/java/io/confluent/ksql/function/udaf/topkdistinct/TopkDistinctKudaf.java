@@ -127,14 +127,17 @@ public class TopkDistinctKudaf<T extends Comparable<? super T>>
   }
 
   @Override
-  public KsqlAggregateFunction<T, T[]> getInstance(final Map<String, Integer> expressionNames,
-                                                   final List<Expression> functionArguments) {
+  public KsqlAggregateFunction<T, T[]> getInstance(
+      final Map<String, Integer> expressionNames,
+      final List<Expression> functionArguments,
+      final Map<String, String> expressionToInternalColumnNameMap) {
     if (functionArguments.size() != 2) {
       throw new KsqlException(String.format("Invalid parameter count. Need 2 args, got %d arg(s)"
                                             + ".", functionArguments.size()));
     }
 
-    final int udafIndex = expressionNames.get(functionArguments.get(0).toString());
+    final int udafIndex = expressionNames.get(expressionToInternalColumnNameMap.get(
+        functionArguments.get(0).toString()));
     final int tkValFromArg = Integer.parseInt(functionArguments.get(1).toString());
     return new TopkDistinctKudaf<>(udafIndex, tkValFromArg, outputSchema, ttClass);
   }

@@ -29,6 +29,8 @@ import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.streams.StreamsBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,8 @@ import io.confluent.ksql.function.udaf.KudafAggregator;
 import io.confluent.ksql.function.udaf.KudafInitializer;
 import io.confluent.ksql.parser.tree.Expression;
 import io.confluent.ksql.parser.tree.FunctionCall;
+import io.confluent.ksql.parser.tree.QualifiedName;
+import io.confluent.ksql.parser.tree.QualifiedNameReference;
 import io.confluent.ksql.parser.tree.WindowExpression;
 import io.confluent.ksql.serde.KsqlTopicSerDe;
 import io.confluent.ksql.structured.SchemaKGroupedStream;
@@ -134,7 +138,8 @@ public class AggregateNode extends PlanNode {
     return requiredColumnList;
   }
 
-  private List<Pair<String, Expression>> getFinalSelectExpressions() {
+  private List<Pair<String, Expression>> getFinalSelectExpressions(
+      final Map<String, String> expressionToInternalColumnNameMap) {
     List<Pair<String, Expression>> finalSelectExpressionList = new ArrayList<>();
     if (finalSelectExpressions.size() != schema.fields().size()) {
       throw new KsqlException(
@@ -145,10 +150,19 @@ public class AggregateNode extends PlanNode {
           + schema.fields().size());
     }
     for (int i = 0; i < finalSelectExpressions.size(); i++) {
-      finalSelectExpressionList.add(new Pair<>(
-          schema.fields().get(i).name(),
-          finalSelectExpressions.get(i)
-      ));
+      finalSelectExpressionList.add(
+          new Pair<>(schema.fields().get(i).name(),
+                     finalSelectExpressions.get(i).toString().startsWith("KSQL_AGG_VARIABLE_") ?
+                     new QualifiedNameReference(
+                         QualifiedName.of(finalSelectExpressions.get(i).toString())) :
+                     new QualifiedNameReference(
+                         QualifiedName.of(
+                             expressionToInternalColumnNameMap
+                                    .get(finalSelectExpressions.get(i).toString())
+                         )
+                     )
+              )
+      );
     }
     return finalSelectExpressionList;
   }
@@ -189,11 +203,15 @@ public class AggregateNode extends PlanNode {
     // Pre aggregate computations
     final List<Pair<String, Expression>> aggArgExpansionList = new ArrayList<>();
     final Map<String, Integer> expressionNames = new HashMap<>();
-    collectAggregateArgExpressions(getRequiredColumnList(), aggArgExpansionList, expressionNames);
-    collectAggregateArgExpressions(
-        getAggregateFunctionArguments(),
-        aggArgExpansionList,
-        expressionNames
+    final Map<String, String> expressionToInternalColumnNameMap = new HashMap<>();
+    collectAggregateArgExpressions(getRequiredColumnList(),
+                                   aggArgExpansionList,
+                                   expressionNames,
+                                   expressionToInternalColumnNameMap);
+    collectAggregateArgExpressions(getAggregateFunctionArguments(),
+                                   aggArgExpansionList,
+                                   expressionNames,
+                                   expressionToInternalColumnNameMap
     );
 
     final SchemaKStream aggregateArgExpanded = sourceSchemaKStream.select(aggArgExpansionList);
@@ -209,17 +227,22 @@ public class AggregateNode extends PlanNode {
     );
 
     final SchemaKGroupedStream schemaKGroupedStream =
-        aggregateArgExpanded.groupBy(Serdes.String(), genericRowSerde, getGroupByExpressions());
+        aggregateArgExpanded.groupBy(Serdes.String(),
+                                     genericRowSerde,
+                                     getGroupByExpressions(),
+                                     expressionToInternalColumnNameMap);
 
     // Aggregate computations
     final SchemaBuilder aggregateSchema = SchemaBuilder.struct();
     final Map<Integer, Integer> aggValToValColumnMap = createAggregateValueToValueColumnMap(
-        aggregateArgExpanded,
-        aggregateSchema
+        schemaKGroupedStream.getSchema(),
+        aggregateSchema,
+        expressionToInternalColumnNameMap
     );
 
     final Schema aggStageSchema = buildAggregateSchema(
         aggregateArgExpanded.getSchema(),
+        sourceSchemaKStream.getSchema(),
         functionRegistry
     );
 
@@ -236,11 +259,12 @@ public class AggregateNode extends PlanNode {
         new KudafAggregator(
             createAggValToFunctionMap(
                 expressionNames,
-                aggregateArgExpanded,
+                sourceSchemaKStream.getSchema(),
                 aggregateSchema,
                 initializer,
                 aggValToValColumnMap.size(),
-                functionRegistry
+                functionRegistry,
+                expressionToInternalColumnNameMap
             ),
             aggValToValColumnMap
         ), getWindowExpression(),
@@ -262,7 +286,7 @@ public class AggregateNode extends PlanNode {
       result = result.filter(getHavingExpressions());
     }
 
-    return result.select(getFinalSelectExpressions());
+    return result.select(getFinalSelectExpressions(expressionToInternalColumnNameMap));
   }
 
   protected int getPartitions(KafkaTopicClient kafkaTopicClient) {
@@ -270,17 +294,19 @@ public class AggregateNode extends PlanNode {
   }
 
   private Map<Integer, Integer> createAggregateValueToValueColumnMap(
-      final SchemaKStream aggregateArgExpanded,
-      final SchemaBuilder aggregateSchema
+      final Schema schema,
+      final SchemaBuilder aggregateSchema,
+      final Map<String, String> expressionToInternalColumnNameMap
   ) {
     Map<Integer, Integer> aggValToValColumnMap = new HashMap<>();
     int nonAggColumnIndex = 0;
     for (Expression expression : getRequiredColumnList()) {
       String exprStr = expression.toString();
-      int index = SchemaUtil.getIndexInSchema(exprStr, aggregateArgExpanded.getSchema());
+      int index = SchemaUtil.getIndexInSchema(expressionToInternalColumnNameMap.get(exprStr),
+                                              schema);
       aggValToValColumnMap.put(nonAggColumnIndex, index);
       nonAggColumnIndex++;
-      Field field = aggregateArgExpanded.getSchema().fields().get(index);
+      Field field = schema.fields().get(index);
       aggregateSchema.field(field.name(), field.schema());
     }
     return aggValToValColumnMap;
@@ -289,23 +315,29 @@ public class AggregateNode extends PlanNode {
   private void collectAggregateArgExpressions(
       final List<Expression> expressions,
       final List<Pair<String, Expression>> aggArgExpansionList,
-      final Map<String, Integer> expressionNames
+      final Map<String, Integer> expressionNames,
+      final Map<String, String> expressionToInternalColumnNameMap
   ) {
     expressions.stream()
         .filter(e -> !expressionNames.containsKey(e.toString()))
         .forEach(expression -> {
-          expressionNames.put(expression.toString(), aggArgExpansionList.size());
-          aggArgExpansionList.add(new Pair<>(expression.toString(), expression));
+//          expressionNames.put(expression.toString(), aggArgExpansionList.size());
+//          aggArgExpansionList.add(new Pair<>(expression.toString(), expression));
+          String internalColumnName = "KSQL_INTERNAL_COL_" + aggArgExpansionList.size();
+          expressionNames.put(internalColumnName, aggArgExpansionList.size());
+          aggArgExpansionList.add(new Pair<>(internalColumnName, expression));
+          expressionToInternalColumnNameMap.put(expression.toString(), internalColumnName);
         });
   }
 
   private Map<Integer, KsqlAggregateFunction> createAggValToFunctionMap(
       final Map<String, Integer> expressionNames,
-      final SchemaKStream aggregateArgExpanded,
+      final Schema schema,
       final SchemaBuilder aggregateSchema,
       final KudafInitializer initializer,
       final int initialUdafIndex,
-      final FunctionRegistry functionRegistry
+      final FunctionRegistry functionRegistry,
+      final Map<String, String> expressionToInternalColumnNameMap
   ) {
     try {
       int udafIndexInAggSchema = initialUdafIndex;
@@ -316,11 +348,12 @@ public class AggregateNode extends PlanNode {
                                       .getName()
                                       .toString(),
                                   functionCall
-                                      .getArguments(), aggregateArgExpanded.getSchema()
+                                      .getArguments(), schema
             );
         KsqlAggregateFunction aggregateFunction = aggregateFunctionInfo.getInstance(
             expressionNames,
-            functionCall.getArguments()
+            functionCall.getArguments(),
+            expressionToInternalColumnNameMap
         );
 
         aggValToAggFunctionMap.put(udafIndexInAggSchema++, aggregateFunction);
@@ -343,6 +376,7 @@ public class AggregateNode extends PlanNode {
 
   private Schema buildAggregateSchema(
       final Schema schema,
+      final Schema schemaForArgTypes,
       final FunctionRegistry functionRegistry
   ) {
     final SchemaBuilder schemaBuilder = SchemaBuilder.struct();
@@ -357,7 +391,7 @@ public class AggregateNode extends PlanNode {
       KsqlAggregateFunction aggregateFunction = functionRegistry.getAggregateFunction(
           udafName,
           getFunctionList().get(aggFunctionVarSuffix).getArguments(),
-          schema
+          schemaForArgTypes
       );
       schemaBuilder.field(
           AggregateExpressionRewriter.AGGREGATE_FUNCTION_VARIABLE_PREFIX

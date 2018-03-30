@@ -53,9 +53,12 @@ public class DoubleMaxKudaf extends KsqlAggregateFunction<Double, Double> {
   }
 
   @Override
-  public KsqlAggregateFunction<Double, Double> getInstance(Map<String, Integer> expressionNames,
-                                                           List<Expression> functionArguments) {
-    int udafIndex = expressionNames.get(functionArguments.get(0).toString());
+  public KsqlAggregateFunction<Double, Double> getInstance(
+      Map<String, Integer> expressionNames,
+      List<Expression> functionArguments,
+      final Map<String, String> expressionToInternalColumnNameMap) {
+    int udafIndex = expressionNames.get(expressionToInternalColumnNameMap.get(
+        functionArguments.get(0).toString()));
     return new DoubleMaxKudaf(udafIndex);
   }
 }

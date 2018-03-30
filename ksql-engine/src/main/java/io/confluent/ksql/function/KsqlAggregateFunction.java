@@ -50,7 +50,8 @@ public abstract class KsqlAggregateFunction<V, A> {
 
   public abstract KsqlAggregateFunction<V, A> getInstance(
       final Map<String, Integer> expressionNames,
-      final List<Expression> functionArguments
+      final List<Expression> functionArguments,
+      final Map<String, String> expressionToInternalColumnNameMap
   );
 
   public boolean hasSameArgTypes(List<Schema> argTypeList) {

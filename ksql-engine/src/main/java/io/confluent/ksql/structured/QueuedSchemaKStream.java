@@ -25,6 +25,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Windowed;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -134,7 +135,8 @@ public class QueuedSchemaKStream extends SchemaKStream {
   @Override
   public SchemaKGroupedStream groupBy(
       final Serde<String> keySerde, final Serde<GenericRow> valSerde,
-      final List<Expression> groupByExpressions) {
+      final List<Expression> groupByExpressions,
+      final Map<String, String> expressionToInternalColumnNameMap) {
     throw new UnsupportedOperationException();
   }
 

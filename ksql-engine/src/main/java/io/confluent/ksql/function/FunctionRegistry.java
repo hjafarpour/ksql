@@ -209,7 +209,8 @@ public class FunctionRegistry {
   }
 
   public KsqlAggregateFunction getAggregateFunction(String functionName,
-          List<Expression> functionArgs, Schema schema) {
+                                                    List<Expression> functionArgs,
+                                                    Schema schema) {
     AggregateFunctionFactory aggregateFunctionFactory = aggregateFunctionMap.get(functionName);
     if (aggregateFunctionFactory == null) {
       throw new KsqlException("No aggregate function with name " + functionName + " exists!");

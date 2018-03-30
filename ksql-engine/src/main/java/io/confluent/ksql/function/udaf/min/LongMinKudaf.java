@@ -53,9 +53,12 @@ public class LongMinKudaf extends KsqlAggregateFunction<Long, Long> {
   }
 
   @Override
-  public KsqlAggregateFunction<Long, Long> getInstance(Map<String, Integer> expressionNames,
-                                                       List<Expression> functionArguments) {
-    int udafIndex = expressionNames.get(functionArguments.get(0).toString());
+  public KsqlAggregateFunction<Long, Long> getInstance(
+      Map<String, Integer> expressionNames,
+      List<Expression> functionArguments,
+      final Map<String, String> expressionToInternalColumnNameMap) {
+    int udafIndex = expressionNames.get(expressionToInternalColumnNameMap.get(
+        functionArguments.get(0).toString()));
     return new LongMinKudaf(udafIndex);
   }
 }

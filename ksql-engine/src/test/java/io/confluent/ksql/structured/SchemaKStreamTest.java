@@ -47,6 +47,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.not;
@@ -184,7 +185,7 @@ public class SchemaKStreamTest {
         initialSchemaKStream.getSchema(), null, false, null);
     List<Expression> groupByExpressions = Arrays.asList(keyExpression);
     SchemaKGroupedStream groupedSchemaKStream = initialSchemaKStream.groupBy(
-        Serdes.String(), rowSerde, groupByExpressions);
+        Serdes.String(), rowSerde, groupByExpressions, new HashMap<>());
 
     Assert.assertEquals(groupedSchemaKStream.getKeyField().name(), "COL0");
   }
@@ -206,7 +207,7 @@ public class SchemaKStreamTest {
         initialSchemaKStream.getSchema(), null, false, null);
     List<Expression> groupByExpressions = Arrays.asList(col1Expression, col0Expression);
     SchemaKGroupedStream groupedSchemaKStream = initialSchemaKStream.groupBy(
-        Serdes.String(), rowSerde, groupByExpressions);
+        Serdes.String(), rowSerde, groupByExpressions, new HashMap<>());
 
     Assert.assertEquals(groupedSchemaKStream.getKeyField().name(), "TEST1.COL1|+|TEST1.COL0");
   }

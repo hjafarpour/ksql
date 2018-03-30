@@ -50,9 +50,12 @@ public class IntegerMinKudaf extends KsqlAggregateFunction<Integer, Integer> {
   }
 
   @Override
-  public KsqlAggregateFunction<Integer, Integer> getInstance(Map<String, Integer> expressionNames,
-                                                           List<Expression> functionArguments) {
-    int udafIndex = expressionNames.get(functionArguments.get(0).toString());
+  public KsqlAggregateFunction<Integer, Integer> getInstance(
+      Map<String, Integer> expressionNames,
+      List<Expression> functionArguments,
+      final Map<String, String> expressionToInternalColumnNameMap) {
+    int udafIndex = expressionNames.get(expressionToInternalColumnNameMap.get(
+        functionArguments.get(0).toString()));
     return new IntegerMinKudaf(udafIndex);
   }
 }

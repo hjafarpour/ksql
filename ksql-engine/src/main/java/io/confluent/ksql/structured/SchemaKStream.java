@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -288,7 +289,9 @@ public class SchemaKStream {
 
   public SchemaKGroupedStream groupBy(
       final Serde<String> keySerde, final Serde<GenericRow> valSerde,
-      final List<Expression> groupByExpressions) {
+      final List<Expression> groupByExpressions,
+      final Map<String, String> expressionToInternalColumnNameMap) {
+
     boolean rekey = rekeyRequired(groupByExpressions);
 
     if (!rekey) {
@@ -313,9 +316,10 @@ public class SchemaKStream {
       } else {
         addSeparator = true;
       }
-      aggregateKeyName.append(groupByExpr.toString());
+      aggregateKeyName.append(expressionToInternalColumnNameMap.get(groupByExpr.toString()));
       newKeyIndexes.add(
-          SchemaUtil.getIndexInSchema(groupByExpr.toString(), getSchema()));
+          SchemaUtil.getIndexInSchema(expressionToInternalColumnNameMap.get(groupByExpr.toString()),
+                                      getSchema()));
     }
 
     KGroupedStream kgroupedStream = kstream.filter((key, value) -> value != null).groupBy(
