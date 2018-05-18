@@ -1128,11 +1128,7 @@ public class AstBuilder extends SqlBaseBaseVisitor<Node> {
   @Override
   public Node visitDereference(SqlBaseParser.DereferenceContext context) {
     String fieldName = getIdentifierText(context.identifier());
-    Expression baseExpression;
-    QualifiedName tableName = QualifiedName.of(
-        context.primaryExpression().getText().toUpperCase());
-    baseExpression = new QualifiedNameReference(
-        getLocation(context.primaryExpression()), tableName);
+    Expression baseExpression = (Expression) visit(context.base);
     DereferenceExpression dereferenceExpression =
         new DereferenceExpression(getLocation(context), baseExpression, fieldName);
     return dereferenceExpression;
@@ -1143,6 +1139,15 @@ public class AstBuilder extends SqlBaseBaseVisitor<Node> {
     String columnName = getIdentifierText(context.identifier());
     // If this is join.
     if (dataSourceExtractor.getJoinLeftSchema() != null) {
+      if (columnName.equalsIgnoreCase(dataSourceExtractor.getLeftAlias())
+          || columnName.equalsIgnoreCase(dataSourceExtractor.getLeftName())
+          || columnName.equalsIgnoreCase(dataSourceExtractor.getRightAlias())
+          || columnName.equalsIgnoreCase(dataSourceExtractor.getRightName())) {
+        return new QualifiedNameReference(
+            getLocation(context),
+            QualifiedName.of(columnName)
+        );
+      }
       if (dataSourceExtractor.getCommonFieldNames().contains(columnName)) {
         throw new KsqlException("Field " + columnName + " is ambiguous.");
       } else if (dataSourceExtractor.getLeftFieldNames().contains(columnName)) {
@@ -1163,12 +1168,21 @@ public class AstBuilder extends SqlBaseBaseVisitor<Node> {
         throw new InvalidColumnReferenceException("Field " + columnName + " is ambiguous.");
       }
     } else {
-      Expression baseExpression =
-          new QualifiedNameReference(
-              getLocation(context),
-              QualifiedName.of(dataSourceExtractor.getFromAlias())
-          );
-      return new DereferenceExpression(getLocation(context), baseExpression, columnName);
+      if (columnName.equalsIgnoreCase(dataSourceExtractor.getFromAlias())
+          || columnName.equalsIgnoreCase(dataSourceExtractor.getFromName())) {
+        return new QualifiedNameReference(
+            getLocation(context),
+            QualifiedName.of(columnName)
+        );
+      } else {
+        Expression baseExpression =
+            new QualifiedNameReference(
+                getLocation(context),
+                QualifiedName.of(dataSourceExtractor.getFromAlias())
+            );
+        return new DereferenceExpression(getLocation(context), baseExpression, columnName);
+      }
+
     }
   }
 

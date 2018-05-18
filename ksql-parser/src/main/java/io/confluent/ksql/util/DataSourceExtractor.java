@@ -47,8 +47,11 @@ public class DataSourceExtractor extends SqlBaseBaseVisitor<Node> {
   private Schema joinRightSchema;
 
   private String fromAlias;
+  private String fromName;
   private String leftAlias;
+  private String leftName;
   private String rightAlias;
+  private String rightName;
 
   private Set<String> commonFieldNames = new HashSet<>();
   private Set<String> leftFieldNames = new HashSet<>();
@@ -86,6 +89,7 @@ public class DataSourceExtractor extends SqlBaseBaseVisitor<Node> {
 
     if (!isJoin) {
       this.fromAlias = alias;
+      this.fromName = table.getName().getSuffix().toUpperCase();
       StructuredDataSource
           fromDataSource =
           metaStore.getSource(table.getName().getSuffix());
@@ -117,6 +121,7 @@ public class DataSourceExtractor extends SqlBaseBaseVisitor<Node> {
     }
 
     this.leftAlias = left.getAlias();
+    this.leftName = ((Table) left.getRelation()).getName().getSuffix();
     StructuredDataSource
         leftDataSource =
         metaStore.getSource(((Table) left.getRelation()).getName().getSuffix());
@@ -127,6 +132,7 @@ public class DataSourceExtractor extends SqlBaseBaseVisitor<Node> {
     this.joinLeftSchema = leftDataSource.getSchema();
 
     this.rightAlias = right.getAlias();
+    this.rightName = ((Table) right.getRelation()).getName().getSuffix();
     StructuredDataSource
         rightDataSource =
         metaStore.getSource(((Table) right.getRelation()).getName().getSuffix());
@@ -173,6 +179,26 @@ public class DataSourceExtractor extends SqlBaseBaseVisitor<Node> {
 
   public String getRightAlias() {
     return rightAlias;
+  }
+
+  public Schema getJoinRightSchema() {
+    return joinRightSchema;
+  }
+
+  public String getFromName() {
+    return fromName;
+  }
+
+  public String getLeftName() {
+    return leftName;
+  }
+
+  public String getRightName() {
+    return rightName;
+  }
+
+  public boolean isJoin() {
+    return isJoin;
   }
 
   public Set<String> getCommonFieldNames() {
