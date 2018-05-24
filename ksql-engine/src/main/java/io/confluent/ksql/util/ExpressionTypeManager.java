@@ -163,12 +163,13 @@ public class ExpressionTypeManager
 
   protected Expression visitSubscriptExpression(
       final SubscriptExpression node, final ExpressionTypeContext expressionTypeContext) {
-    String arrayBaseName = node.getBase().toString();
-    Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
-    if (!schemaField.isPresent()) {
-      throw new KsqlException(String.format("Invalid Expression %s.", node.toString()));
+
+    process(node.getBase(), expressionTypeContext);
+    Schema arraySchema = expressionTypeContext.getSchema();
+    if (arraySchema.type() != Schema.Type.ARRAY) {
+      throw new KsqlException("The variable is not an array: " + node.getBase().toString());
     }
-    expressionTypeContext.setSchema(schemaField.get().schema().valueSchema());
+    expressionTypeContext.setSchema(arraySchema.valueSchema());
     return null;
   }
 

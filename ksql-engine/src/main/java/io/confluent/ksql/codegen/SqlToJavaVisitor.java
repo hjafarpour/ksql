@@ -514,27 +514,26 @@ public class SqlToJavaVisitor {
         SubscriptExpression node,
         Boolean unmangleNames
     ) {
-      String arrayBaseName = node.getBase().toString();
-      Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
-      if (!schemaField.isPresent()) {
-        throw new KsqlException("Field not found: " + arrayBaseName);
-      }
-      if (schemaField.get().schema().type() == Schema.Type.ARRAY) {
+      ExpressionTypeManager expressionTypeManager = new ExpressionTypeManager(schema,
+                                                                              functionRegistry);
+      Schema baseSchema = expressionTypeManager.getExpressionType(node.getBase());
+
+      if (baseSchema.type() == Schema.Type.ARRAY) {
         return new Pair<>("(("
-                           + SchemaUtil.getJavaType(schemaField.get().schema().valueSchema())
+                           + SchemaUtil.getJavaType(baseSchema.valueSchema())
                                .getSimpleName()
                            + ") ((java.util.List)"
                           + process(node.getBase(), unmangleNames).getLeft() + ").get((int)("
                           + process(node.getIndex(), unmangleNames).getLeft() + ")))",
-                          schemaField.get().schema().valueSchema()
+                          baseSchema.valueSchema()
         );
-      } else if (schemaField.get().schema().type() == Schema.Type.MAP) {
+      } else if (baseSchema.type() == Schema.Type.MAP) {
         return new Pair<>(
             "("
-            + SchemaUtil.getJavaCastString(schemaField.get().schema().valueSchema())
+            + SchemaUtil.getJavaCastString(baseSchema.valueSchema())
             + process(node.getBase(), unmangleNames).getLeft() + ".get("
             + process(node.getIndex(), unmangleNames).getLeft() + "))",
-            schemaField.get().schema().valueSchema()
+            baseSchema.valueSchema()
         );
       }
       throw new UnsupportedOperationException();

@@ -89,7 +89,11 @@ public class CodeGenRunner {
 
     IExpressionEvaluator ee =
         CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
-    ee.setDefaultImports(new String[]{"org.apache.kafka.connect.data.Struct"});
+    ee.setDefaultImports(new String[]{"org.apache.kafka.connect.data.Struct",
+                                      "java.util.HashMap",
+                                      "java.util.Map",
+                                      "java.util.List",
+                                      "java.util.ArrayList"});
 
     // The expression will have two "int" parameters: "a" and "b".
     ee.setParameters(parameterNames, parameterTypes);
@@ -195,16 +199,21 @@ public class CodeGenRunner {
 
     @Override
     protected Object visitSubscriptExpression(SubscriptExpression node, Object context) {
-      String arrayBaseName = node.getBase().toString();
-      Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
-      if (!schemaField.isPresent()) {
-        throw new RuntimeException(
-            "Cannot find the select field in the available fields: " + arrayBaseName);
+      if (node.getBase() instanceof FunctionCall) {
+        process(node.getBase(), context);
+      } else {
+        String arrayBaseName = node.getBase().toString();
+        Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
+        if (!schemaField.isPresent()) {
+          throw new RuntimeException(
+              "Cannot find the select field in the available fields: " + arrayBaseName);
+        }
+        parameterMap.put(
+            schemaField.get().name().replace(".", "_"),
+            SchemaUtil.getJavaType(schemaField.get().schema())
+        );
       }
-      parameterMap.put(
-          schemaField.get().name().replace(".", "_"),
-          SchemaUtil.getJavaType(schemaField.get().schema())
-      );
+
       process(node.getIndex(), context);
       return null;
     }
