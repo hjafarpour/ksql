@@ -520,6 +520,7 @@ public class KsqlResource {
     );
 
     ddlCommandTasks.put(CreateStreamAsSelect.class, (statement, statementText, properties) -> {
+
       QueryMetadata
           queryMetadata =
           ksqlEngine.getQueryExecutionPlan(((CreateStreamAsSelect) statement).getQuery());

@@ -298,6 +298,22 @@ public abstract class DefaultAstVisitor<R, C>
     return visitExpression(node, context);
   }
 
+  protected R visitWindowExpression(WindowExpression node, C context) {
+    return visitNode(node, context);
+  }
+
+  protected R visitTumblingWindowExpression(TumblingWindowExpression node, C context) {
+    return visitNode(node, context);
+  }
+
+  protected R visitHoppingWindowExpression(HoppingWindowExpression node, C context) {
+    return visitNode(node, context);
+  }
+
+  protected R visitSessionWindowExpression(SessionWindowExpression node, C context) {
+    return visitNode(node, context);
+  }
+
   protected R visitWindow(Window node, C context) {
     return visitNode(node, context);
   }

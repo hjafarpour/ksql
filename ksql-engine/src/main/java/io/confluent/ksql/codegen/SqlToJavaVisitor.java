@@ -57,6 +57,7 @@ import io.confluent.ksql.parser.tree.QualifiedNameReference;
 import io.confluent.ksql.parser.tree.StringLiteral;
 import io.confluent.ksql.parser.tree.SubscriptExpression;
 import io.confluent.ksql.parser.tree.SymbolReference;
+import io.confluent.ksql.util.ExpressionTypeManager;
 import io.confluent.ksql.util.KsqlException;
 import io.confluent.ksql.util.Pair;
 import io.confluent.ksql.util.SchemaUtil;
@@ -220,8 +221,17 @@ public class SqlToJavaVisitor {
     protected Pair<String, Schema> visitFunctionCall(FunctionCall node, Boolean unmangleNames) {
       StringBuilder builder = new StringBuilder("(");
       String name = node.getName().getSuffix();
+      String javaReturnType;
       KsqlFunction ksqlFunction = functionRegistry.getFunction(name);
-      String javaReturnType = SchemaUtil.getJavaType(ksqlFunction.getReturnType()).getSimpleName();
+      if (name.equalsIgnoreCase("FETCH_FIELD_FROM_STRUCT")) {
+        ExpressionTypeManager expressionTypeManager = new ExpressionTypeManager(schema,
+                                                                                functionRegistry);
+        Schema returnSchema = expressionTypeManager.getExpressionType(node);
+        javaReturnType = SchemaUtil.getJavaType(returnSchema).getSimpleName();
+      } else {
+        javaReturnType = SchemaUtil.getJavaType(ksqlFunction.getReturnType()).getSimpleName();
+      }
+
       builder.append("(" + javaReturnType + ") " + name + ".evaluate(");
       boolean addComma = false;
       for (Expression argExpr : node.getArguments()) {

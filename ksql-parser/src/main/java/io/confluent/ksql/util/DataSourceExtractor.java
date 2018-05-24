@@ -22,6 +22,7 @@ import io.confluent.ksql.parser.AstBuilder;
 import io.confluent.ksql.parser.SqlBaseBaseVisitor;
 import io.confluent.ksql.parser.SqlBaseParser;
 import io.confluent.ksql.parser.tree.AliasedRelation;
+import io.confluent.ksql.parser.tree.Map;
 import io.confluent.ksql.parser.tree.Node;
 import io.confluent.ksql.parser.tree.NodeLocation;
 import io.confluent.ksql.parser.tree.QualifiedName;
@@ -32,6 +33,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +65,18 @@ public class DataSourceExtractor extends SqlBaseBaseVisitor<Node> {
 
     this.metaStore = metaStore;
   }
+
+  public java.util.Map<String, String> getAliasToNameMap() {
+    java.util.Map aliasToNameMap = new HashMap();
+    if (rightName != null && rightAlias != null) {
+      aliasToNameMap.put(leftAlias, leftName);
+      aliasToNameMap.put(rightAlias, rightName);
+    } else {
+      aliasToNameMap.put(fromAlias, fromName);
+    }
+    return aliasToNameMap;
+  }
+
 
   @Override
   public Node visitQuerySpecification(final SqlBaseParser.QuerySpecificationContext ctx) {

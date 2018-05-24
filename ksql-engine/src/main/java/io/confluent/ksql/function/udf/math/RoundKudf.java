@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.math;
 
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 
@@ -27,5 +29,10 @@ public class RoundKudf implements Kudf {
       throw new KsqlFunctionException("Len udf should have one input argument.");
     }
     return Math.round((Double) args[0]);
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.INT64_SCHEMA;
   }
 }

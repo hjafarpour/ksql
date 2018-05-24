@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.string;
 
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 
@@ -34,5 +36,10 @@ public class SubstringKudf implements Kudf {
       long end = (Long) args[2];
       return string.substring((int) start, (int) end);
     }
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.STRING_SCHEMA;
   }
 }

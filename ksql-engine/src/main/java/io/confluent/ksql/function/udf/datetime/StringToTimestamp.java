@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.datetime;
 
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 import io.confluent.ksql.util.timestamp.StringToTimestampParser;
@@ -43,6 +45,11 @@ public class StringToTimestamp implements Kudf {
     if (timestampParser == null) {
       timestampParser = new StringToTimestampParser(args[1].toString());
     }
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.INT64_SCHEMA;
   }
 
 }

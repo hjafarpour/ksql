@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.string;
 
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 
@@ -27,5 +29,10 @@ public class LCaseKudf implements Kudf {
       throw new KsqlFunctionException("LCase udf should have one input argument.");
     }
     return args[0].toString().toLowerCase();
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.STRING_SCHEMA;
   }
 }

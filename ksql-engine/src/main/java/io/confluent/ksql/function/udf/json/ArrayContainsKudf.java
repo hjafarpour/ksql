@@ -19,6 +19,9 @@ package io.confluent.ksql.function.udf.json;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 import io.confluent.ksql.util.ArrayUtil;
@@ -129,5 +132,10 @@ public class ArrayContainsKudf implements Kudf {
       return value ? VALUE_TRUE : VALUE_FALSE;
     }
     throw new KsqlFunctionException("Invalid Type for search value " + searchValue);
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.BOOLEAN_SCHEMA;
   }
 }

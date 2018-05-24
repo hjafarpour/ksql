@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.math;
 
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 
@@ -28,4 +30,10 @@ public class FloorKudf implements Kudf {
     }
     return Math.floor((Double) args[0]);
   }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.FLOAT64_SCHEMA;
+  }
+
 }

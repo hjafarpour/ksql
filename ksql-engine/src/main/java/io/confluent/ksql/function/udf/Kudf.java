@@ -16,6 +16,10 @@
 
 package io.confluent.ksql.function.udf;
 
+import org.apache.kafka.connect.data.Schema;
+
 public interface Kudf {
   Object evaluate(Object... args);
+
+  Schema getReturnSchema(Object... args);
 }

@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.math;
 
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 
@@ -28,5 +30,10 @@ public class AbsKudf implements Kudf {
     }
 
     return Math.abs(((Number) args[0]).doubleValue());
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.FLOAT64_SCHEMA;
   }
 }

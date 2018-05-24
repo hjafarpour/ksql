@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.string;
 
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 
@@ -31,5 +33,10 @@ public class IfNullKudf implements Kudf {
     } else {
       return args[0];
     }
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.STRING_SCHEMA;
   }
 }

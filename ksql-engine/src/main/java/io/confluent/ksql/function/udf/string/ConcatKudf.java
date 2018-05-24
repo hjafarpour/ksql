@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.string;
 
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 
@@ -27,5 +29,10 @@ public class ConcatKudf implements Kudf {
       throw new KsqlFunctionException("Concat udf should have two input argument.");
     }
     return args[0].toString() + args[1].toString();
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.STRING_SCHEMA;
   }
 }

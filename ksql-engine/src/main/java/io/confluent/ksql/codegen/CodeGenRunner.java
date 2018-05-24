@@ -89,6 +89,7 @@ public class CodeGenRunner {
 
     IExpressionEvaluator ee =
         CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
+    ee.setDefaultImports(new String[]{"org.apache.kafka.connect.data.Struct"});
 
     // The expression will have two "int" parameters: "a" and "b".
     ee.setParameters(parameterNames, parameterTypes);
@@ -101,6 +102,7 @@ public class CodeGenRunner {
     Schema expressionType = expressionTypeManager.getExpressionType(expression);
 
     ee.setExpressionType(SchemaUtil.getJavaType(expressionType));
+
 
     // And now we "cook" (scan, parse, compile and load) the fabulous expression.
     ee.cook(javaCode);

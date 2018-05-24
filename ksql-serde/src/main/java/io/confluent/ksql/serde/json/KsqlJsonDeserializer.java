@@ -130,7 +130,7 @@ public class KsqlJsonDeserializer implements Deserializer<GenericRow> {
         Map columnMap = new HashMap();
         map.forEach((k, v) -> columnMap.put(enforceFieldType(Schema.STRING_SCHEMA, k),
                                             enforceFieldType(fieldSchema.valueSchema(), v)));
-        return map;
+        return columnMap;
       case STRUCT:
         Map structMap = (Map) columnVal;
         Struct columnStruct = new Struct(fieldSchema);

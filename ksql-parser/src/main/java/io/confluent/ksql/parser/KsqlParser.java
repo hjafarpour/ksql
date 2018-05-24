@@ -18,10 +18,8 @@ package io.confluent.ksql.parser;
 
 import io.confluent.ksql.parser.exception.ParseFailedException;
 import io.confluent.ksql.metastore.MetaStore;
-import io.confluent.ksql.parser.rewrite.NestedFieldHandler;
+import io.confluent.ksql.parser.rewrite.StatementRewiteForStruct;
 import io.confluent.ksql.parser.tree.CreateAsSelect;
-import io.confluent.ksql.parser.tree.CreateStreamAsSelect;
-import io.confluent.ksql.parser.tree.InsertInto;
 import io.confluent.ksql.parser.tree.Node;
 import io.confluent.ksql.parser.tree.Query;
 import io.confluent.ksql.parser.tree.Statement;
@@ -59,8 +57,10 @@ public class KsqlParser {
         Node root = new AstBuilder(dataSourceExtractor).visit(statementContext);
         Statement statement = (Statement) root;
 
-        if (statement instanceof Query) {
-          statement = new NestedFieldHandler(statement).updateAstIfNeeded();
+        if (statement instanceof Query
+            || statement instanceof CreateAsSelect) {
+          statement = new StatementRewiteForStruct(statement, metaStore, dataSourceExtractor)
+              .rewriteForStruct();
         }
 
         astNodes.add(statement);
@@ -90,6 +90,10 @@ public class KsqlParser {
     AstBuilder astBuilder = new AstBuilder(dataSourceExtractor);
     Node root = astBuilder.visit(statementContext);
     Statement statement = (Statement) root;
+    if (statement instanceof Query) {
+      statement = new StatementRewiteForStruct(statement, metaStore, dataSourceExtractor)
+          .rewriteForStruct();
+    }
     return new Pair<>(statement, dataSourceExtractor);
   }
 

@@ -24,6 +24,7 @@ import io.confluent.ksql.function.udaf.topk.TopKAggregateFunctionFactory;
 import io.confluent.ksql.function.udaf.topkdistinct.TopkDistinctAggFunctionFactory;
 import io.confluent.ksql.function.udf.datetime.StringToTimestamp;
 import io.confluent.ksql.function.udf.datetime.TimestampToString;
+import io.confluent.ksql.function.udf.fieldextractors.FetchFieldFromStruct;
 import io.confluent.ksql.function.udf.json.ArrayContainsKudf;
 import io.confluent.ksql.function.udf.json.JsonExtractStringKudf;
 import io.confluent.ksql.function.udf.math.AbsKudf;
@@ -145,6 +146,16 @@ public class FunctionRegistry {
                                                       "STRINGTOTIMESTAMP",
                                                       StringToTimestamp.class);
     addFunction(stringToTimestamp);
+
+    /***************************************
+     * Field Extractor functions            *
+     ****************************************/
+
+    KsqlFunction fetchFieldFromStruct = new KsqlFunction(
+        Schema.BOOLEAN_SCHEMA, Arrays.asList(SchemaBuilder.struct(), Schema
+        .STRING_SCHEMA),
+        FetchFieldFromStruct.functionName, FetchFieldFromStruct.class);
+    addFunction(fetchFieldFromStruct);
 
     /***************************************
      * JSON functions                     *

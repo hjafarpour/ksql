@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.math;
 
+import org.apache.kafka.connect.data.Schema;
+
 import io.confluent.ksql.function.KsqlFunctionException;
 import io.confluent.ksql.function.udf.Kudf;
 
@@ -27,5 +29,10 @@ public class RandomKudf implements Kudf {
       throw new KsqlFunctionException("Random udf should have no input argument.");
     }
     return Math.random();
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.FLOAT64_SCHEMA;
   }
 }

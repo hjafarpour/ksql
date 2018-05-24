@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.function.udf.datetime;
 
+import org.apache.kafka.connect.data.Schema;
+
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -51,5 +53,10 @@ public class TimestampToString implements Kudf {
     if (threadSafeFormatter == null) {
       threadSafeFormatter = DateTimeFormatter.ofPattern(args[1].toString());
     }
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.STRING_SCHEMA;
   }
 }

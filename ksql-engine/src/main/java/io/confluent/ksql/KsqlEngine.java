@@ -59,6 +59,7 @@ import io.confluent.ksql.metastore.MetaStoreImpl;
 import io.confluent.ksql.parser.KsqlParser;
 import io.confluent.ksql.parser.SqlBaseParser;
 import io.confluent.ksql.parser.exception.ParseFailedException;
+import io.confluent.ksql.parser.rewrite.StatementRewiteForStruct;
 import io.confluent.ksql.parser.tree.CreateAsSelect;
 import io.confluent.ksql.parser.tree.CreateStream;
 import io.confluent.ksql.parser.tree.CreateTable;
@@ -327,6 +328,12 @@ public class KsqlEngine implements Closeable {
             tempMetaStoreForParser
         );
         Statement statement = statementInfo.getLeft();
+        if (statement instanceof Query
+            || statement instanceof CreateAsSelect) {
+          statement = new StatementRewiteForStruct(statement, metaStore, statementInfo.getRight())
+              .rewriteForStruct();
+        }
+
 
         Pair<String, Statement> queryPair =
             buildSingleQueryAst(

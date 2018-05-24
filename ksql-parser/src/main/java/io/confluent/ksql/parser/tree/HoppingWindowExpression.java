@@ -59,6 +59,27 @@ public class HoppingWindowExpression extends KsqlWindowExpression {
     this.advanceByUnit = advanceByUnit;
   }
 
+  public long getSize() {
+    return size;
+  }
+
+  public TimeUnit getSizeUnit() {
+    return sizeUnit;
+  }
+
+  public long getAdvanceBy() {
+    return advanceBy;
+  }
+
+  public TimeUnit getAdvanceByUnit() {
+    return advanceByUnit;
+  }
+
+  @Override
+  public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    return visitor.visitHoppingWindowExpression(this, context);
+  }
+
   @Override
   public String toString() {
     return " HOPPING ( SIZE " + size + " " + sizeUnit + " , ADVANCE BY "

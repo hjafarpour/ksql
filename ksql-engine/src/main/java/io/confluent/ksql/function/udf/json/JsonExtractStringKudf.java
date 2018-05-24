@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import org.apache.kafka.connect.data.Schema;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -86,5 +88,10 @@ public class JsonExtractStringKudf implements Kudf {
     } catch (IOException e) {
       throw new KsqlFunctionException("Invalid JSON format:" + jsonString, e);
     }
+  }
+
+  @Override
+  public Schema getReturnSchema(Object... args) {
+    return Schema.STRING_SCHEMA;
   }
 }

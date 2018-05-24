@@ -33,8 +33,19 @@ public class CreateStreamAsSelect extends Statement implements CreateAsSelect {
   private final Map<String, Expression> properties;
   private final Optional<Expression> partitionByColumn;
 
-  public CreateStreamAsSelect(NodeLocation location, QualifiedName name, Query query,
-                      boolean notExists, Map<String, Expression> properties,
+  public CreateStreamAsSelect(QualifiedName name,
+                              Query query,
+                              boolean notExists,
+                              Map<String, Expression> properties,
+                              Optional<Expression> partitionByColumn) {
+    this(Optional.empty(), name, query, notExists, properties, partitionByColumn);
+  }
+
+  public CreateStreamAsSelect(NodeLocation location,
+                              QualifiedName name,
+                              Query query,
+                              boolean notExists,
+                              Map<String, Expression> properties,
                               Optional<Expression> partitionByColumn) {
     this(Optional.of(location), name, query, notExists, properties, partitionByColumn);
   }

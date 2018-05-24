@@ -38,7 +38,6 @@ import io.confluent.ksql.parser.tree.SubscriptExpression;
 import io.confluent.ksql.planner.PlanException;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
-
 import java.util.Optional;
 
 public class ExpressionTypeManager
@@ -178,7 +177,16 @@ public class ExpressionTypeManager
 
     KsqlFunction ksqlFunction = functionRegistry.getFunction(node.getName().getSuffix());
     if (ksqlFunction != null) {
-      expressionTypeContext.setSchema(ksqlFunction.getReturnType());
+      if (node.getName().toString().equalsIgnoreCase("FETCH_FIELD_FROM_STRUCT")) {
+        process(node.getArguments().get(0), expressionTypeContext);
+        Schema firstArgSchema = expressionTypeContext.getSchema();
+        String fieldName = ((StringLiteral) node.getArguments().get(1)).getValue();
+        Schema returnSchema = firstArgSchema.field(fieldName).schema();
+        expressionTypeContext.setSchema(returnSchema);
+      } else {
+        expressionTypeContext.setSchema(ksqlFunction.getReturnType());
+      }
+
     } else if (functionRegistry.isAnAggregateFunction(node.getName().getSuffix())) {
       KsqlAggregateFunction ksqlAggregateFunction =
           functionRegistry.getAggregateFunction(
