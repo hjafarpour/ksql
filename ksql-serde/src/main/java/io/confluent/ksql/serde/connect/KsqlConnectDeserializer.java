@@ -48,7 +48,7 @@ public class KsqlConnectDeserializer implements Deserializer<GenericRow> {
     if (bytes == null) {
       return null;
     }
-    SchemaAndValue schemaAndValue = converter.toConnectData(topic, bytes);
+    final SchemaAndValue schemaAndValue = converter.toConnectData(topic, bytes);
     return connectToKsqlTranslator.toKsqlRow(
         schema, schemaAndValue.schema(), schemaAndValue.value());
   }

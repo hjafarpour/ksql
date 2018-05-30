@@ -25,15 +25,15 @@ import org.apache.kafka.connect.data.Schema;
 import java.util.Collections;
 
 public class AvroSchemaTranslator extends ConnectSchemaTranslator {
-  public static Schema toKsqlSchema(String avroSchemaString) {
-    org.apache.avro.Schema avroSchema =
+  public static Schema toKsqlSchema(final String avroSchemaString) {
+    final org.apache.avro.Schema avroSchema =
         new org.apache.avro.Schema.Parser().parse(avroSchemaString);
     AvroData avroData = new AvroData(new AvroDataConfig(Collections.emptyMap()));
     return new AvroSchemaTranslator().toKsqlSchema(avroData.toConnectSchema(avroSchema));
   }
 
   @Override
-  protected Schema toKsqlFieldSchema(Schema connectSchema) {
+  protected Schema toKsqlFieldSchema(final Schema connectSchema) {
     if (connectSchema.type() == Schema.Type.STRUCT
         && connectSchema.name() == AvroData.AVRO_TYPE_UNION) {
       throw new KsqlException("Union type not supported");

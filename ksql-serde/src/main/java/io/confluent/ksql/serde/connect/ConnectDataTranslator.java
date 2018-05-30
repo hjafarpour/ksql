@@ -28,11 +28,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ConnectDataTranslator {
-  public GenericRow toKsqlRow(Schema schema, Schema connectSchema, Object connectData) {
+  public GenericRow toKsqlRow(final Schema schema, final Schema connectSchema,
+                              final Object connectData) {
     if (! schema.type().equals(Schema.Type.STRUCT)) {
       throw new KsqlException("Schema for a KSQL row should be a struct");
     }
-    Struct rowStruct = (Struct) toKsqlValue(schema, connectSchema, connectData);
+    final Struct rowStruct = (Struct) toKsqlValue(schema, connectSchema, connectData);
     return new GenericRow(
         schema.fields()
             .stream()
@@ -41,7 +42,8 @@ public class ConnectDataTranslator {
     );
   }
 
-  private Object toKsqlValue(Schema schema, Schema connectSchema, Object connectValue) {
+  private Object toKsqlValue(final Schema schema, final Schema connectSchema,
+                             final Object connectValue) {
     // Map a connect value+schema onto the schema expected by KSQL. For now this involves:
     // - handling case insensitivity for struct field names
     // - setting missing values to null
@@ -70,16 +72,16 @@ public class ConnectDataTranslator {
     return toKsqlStruct(schema, connectSchema, (Struct) connectValue);
   }
 
-  private List toKsqlArray(
-      final Schema valueSchema, final Schema connectValueSchema, final List<Object> connectArray) {
+  private List toKsqlArray(final Schema valueSchema, final Schema connectValueSchema,
+                           final List<Object> connectArray) {
     return connectArray.stream()
         .map(o -> toKsqlValue(valueSchema, connectValueSchema, o))
         .collect(Collectors.toList());
   }
 
-  private Map toKsqlMap(
-      Schema keySchema, Schema connectKeySchema, Schema valueSchema, Schema connectValueSchema,
-      Map<String, Object> connectMap) {
+  private Map toKsqlMap(final Schema keySchema, final Schema connectKeySchema,
+                        final Schema valueSchema, final Schema connectValueSchema,
+                        final Map<String, Object> connectMap) {
     return connectMap.entrySet().stream()
         .collect(
             Collectors.toMap(
@@ -88,10 +90,11 @@ public class ConnectDataTranslator {
             ));
   }
 
-  private Struct toKsqlStruct(Schema schema, Schema connectSchema, Struct connectStruct) {
+  private Struct toKsqlStruct(final Schema schema, final Schema connectSchema,
+                              final Struct connectStruct) {
     // todo: check name here? e.g. what if the struct gets changed to a union?
-    Struct ksqlStruct = new Struct(schema);
-    Map<String, String> caseInsensitiveFieldNameMap
+    final Struct ksqlStruct = new Struct(schema);
+    final Map<String, String> caseInsensitiveFieldNameMap
         = getCaseInsensitiveFieldMap(connectStruct.schema());
     for (Field field : schema.fields()) {
       // TODO: should we throw an exception if this is not true? this means the schema changed
@@ -107,7 +110,7 @@ public class ConnectDataTranslator {
     return ksqlStruct;
   }
 
-  private Map<String, String> getCaseInsensitiveFieldMap(Schema schema) {
+  private Map<String, String> getCaseInsensitiveFieldMap(final Schema schema) {
     return schema.fields()
         .stream()
         .collect(

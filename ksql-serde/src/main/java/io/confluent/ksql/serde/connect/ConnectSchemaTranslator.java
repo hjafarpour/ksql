@@ -22,15 +22,15 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 
 public class ConnectSchemaTranslator {
-  public Schema toKsqlSchema(Schema schema) {
-    Schema rowSchema = toKsqlFieldSchema(schema);
+  public Schema toKsqlSchema(final Schema schema) {
+    final Schema rowSchema = toKsqlFieldSchema(schema);
     if (rowSchema.type() != Schema.Type.STRUCT) {
       throw new KsqlException("KSQL stream/table schema must be structured");
     }
     return rowSchema;
   }
 
-  protected Schema toKsqlFieldSchema(Schema schema) {
+  protected Schema toKsqlFieldSchema(final Schema schema) {
     switch (schema.type()) {
       case INT32:
       case INT64:
@@ -50,20 +50,20 @@ public class ConnectSchemaTranslator {
     }
   }
 
-  private Schema toKsqlMapSchema(Schema schema) {
+  private Schema toKsqlMapSchema(final Schema schema) {
     return SchemaBuilder.map(
         toKsqlFieldSchema(schema.keySchema()),
         toKsqlFieldSchema(schema.valueSchema()));
   }
 
-  private Schema toKsqlArraySchema(Schema schema) {
+  private Schema toKsqlArraySchema(final Schema schema) {
     return SchemaBuilder.array(schema.valueSchema());
   }
 
-  private Schema toKsqlStructSchema(Schema schema) {
-    SchemaBuilder schemaBuilder = SchemaBuilder.struct();
+  private Schema toKsqlStructSchema(final Schema schema) {
+    final SchemaBuilder schemaBuilder = SchemaBuilder.struct();
     for (Field field : schema.fields()) {
-      Schema fieldSchema = toKsqlFieldSchema(field.schema());
+      final Schema fieldSchema = toKsqlFieldSchema(field.schema());
       if (fieldSchema != null) {
         schemaBuilder.field(field.name().toUpperCase(), fieldSchema);
       }

@@ -28,11 +28,11 @@ import static org.junit.Assert.fail;
 
 
 public class ConnectSchemaTranslatorTest {
-  ConnectSchemaTranslator schemaTranslator = new ConnectSchemaTranslator();
+  final ConnectSchemaTranslator schemaTranslator = new ConnectSchemaTranslator();
 
   @Test
   public void shouldTranslatePrimitives() {
-    Schema connectSchema = SchemaBuilder
+    final Schema connectSchema = SchemaBuilder
         .struct()
         .field("intField", Schema.INT32_SCHEMA)
         .field("longField", Schema.INT64_SCHEMA)
@@ -41,7 +41,7 @@ public class ConnectSchemaTranslatorTest {
         .field("booleanField", Schema.BOOLEAN_SCHEMA)
         .build();
 
-    Schema ksqlSchema = schemaTranslator.toKsqlSchema(connectSchema);
+    final Schema ksqlSchema = schemaTranslator.toKsqlSchema(connectSchema);
     assertThat(ksqlSchema.schema().type(), equalTo(Schema.Type.STRUCT));
     assertThat(ksqlSchema.fields().size(), equalTo(connectSchema.fields().size()));
     for (int i = 0; i < ksqlSchema.fields().size(); i++) {
@@ -56,14 +56,14 @@ public class ConnectSchemaTranslatorTest {
 
   @Test
   public void shouldTranslateMaps() {
-    Schema connectSchema = SchemaBuilder
+    final Schema connectSchema = SchemaBuilder
         .struct()
         .field("mapField", SchemaBuilder.map(Schema.STRING_SCHEMA, Schema.INT32_SCHEMA))
         .build();
 
-    Schema ksqlSchema = schemaTranslator.toKsqlSchema(connectSchema);
+    final Schema ksqlSchema = schemaTranslator.toKsqlSchema(connectSchema);
     assertThat(ksqlSchema.field("MAPFIELD"), notNullValue());
-    Schema mapSchema = ksqlSchema.field("MAPFIELD").schema();
+    final Schema mapSchema = ksqlSchema.field("MAPFIELD").schema();
     assertThat(mapSchema.type(), equalTo(Schema.Type.MAP));
     assertThat(mapSchema.keySchema(), equalTo(Schema.STRING_SCHEMA));
     assertThat(mapSchema.valueSchema(), equalTo(Schema.INT32_SCHEMA));
@@ -71,32 +71,32 @@ public class ConnectSchemaTranslatorTest {
 
   @Test
   public void shouldTranslateArray() {
-    Schema connectSchema = SchemaBuilder
+    final Schema connectSchema = SchemaBuilder
         .struct()
         .field("arrayField", SchemaBuilder.array(Schema.INT32_SCHEMA))
         .build();
 
-    Schema ksqlSchema = schemaTranslator.toKsqlSchema(connectSchema);
+    final Schema ksqlSchema = schemaTranslator.toKsqlSchema(connectSchema);
     assertThat(ksqlSchema.field("ARRAYFIELD"), notNullValue());
-    Schema mapSchema = ksqlSchema.field("ARRAYFIELD").schema();
+    final Schema mapSchema = ksqlSchema.field("ARRAYFIELD").schema();
     assertThat(mapSchema.type(), equalTo(Schema.Type.ARRAY));
     assertThat(mapSchema.valueSchema(), equalTo(Schema.INT32_SCHEMA));
   }
 
   @Test
   public void shouldTranslateNested() {
-    Schema connectInnerSchema = SchemaBuilder
+    final Schema connectInnerSchema = SchemaBuilder
         .struct()
         .field("intField", Schema.INT32_SCHEMA)
         .build();
-    Schema connectSchema = SchemaBuilder
+    final Schema connectSchema = SchemaBuilder
         .struct()
         .field("structField", connectInnerSchema)
         .build();
 
-    Schema ksqlSchema = schemaTranslator.toKsqlSchema(connectSchema);
+    final Schema ksqlSchema = schemaTranslator.toKsqlSchema(connectSchema);
     assertThat(ksqlSchema.field("STRUCTFIELD"), notNullValue());
-    Schema innerSchema = ksqlSchema.field("STRUCTFIELD").schema();
+    final Schema innerSchema = ksqlSchema.field("STRUCTFIELD").schema();
     assertThat(innerSchema.fields().size(), equalTo(connectInnerSchema.fields().size()));
     for (int i = 0; i < connectInnerSchema.fields().size(); i++) {
       assertThat(
@@ -110,7 +110,7 @@ public class ConnectSchemaTranslatorTest {
 
   @Test
   public void shouldThrowOnUnsupportedType() {
-    Schema connectSchema = SchemaBuilder
+    final Schema connectSchema = SchemaBuilder
         .struct()
         .field("bytesField", Schema.BYTES_SCHEMA)
         .build();

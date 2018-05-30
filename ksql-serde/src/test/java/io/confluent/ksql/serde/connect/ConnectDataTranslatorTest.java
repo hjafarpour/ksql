@@ -32,31 +32,31 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ConnectDataTranslatorTest {
-  ConnectDataTranslator connectToKsqlTranslator = new ConnectDataTranslator();
+  final ConnectDataTranslator connectToKsqlTranslator = new ConnectDataTranslator();
 
   @Test
   public void shouldTranslateStructCorrectly() {
-    Schema structSchema = SchemaBuilder
+    final Schema structSchema = SchemaBuilder
         .struct()
         .field("INT", SchemaBuilder.INT32_SCHEMA)
         .field("LONG", SchemaBuilder.INT64_SCHEMA)
         .build();
-    Schema rowSchema = SchemaBuilder
+    final Schema rowSchema = SchemaBuilder
         .struct()
         .field("STRUCT", structSchema)
         .build();
 
-    Struct connectStruct = new Struct(rowSchema);
-    Struct structColumn = new Struct(structSchema);
+    final Struct connectStruct = new Struct(rowSchema);
+    final Struct structColumn = new Struct(structSchema);
     structColumn.put("INT", 123);
     structColumn.put("LONG", 456L);
     connectStruct.put("STRUCT", structColumn);
 
-    GenericRow row = connectToKsqlTranslator.toKsqlRow(rowSchema, rowSchema, connectStruct);
+    final GenericRow row = connectToKsqlTranslator.toKsqlRow(rowSchema, rowSchema, connectStruct);
 
     assertThat(row.getColumns().size(), equalTo(1));
     assertThat(row.getColumnValue(0), instanceOf(Struct.class));
-    Struct connectStructColumn = row.getColumnValue(0);
+    final Struct connectStructColumn = row.getColumnValue(0);
     assertThat(connectStructColumn.schema(), equalTo(structSchema));
     assertThat(connectStructColumn.get("INT"), equalTo(123));
     assertThat(connectStructColumn.get("LONG"), equalTo(456L));
@@ -64,14 +64,14 @@ public class ConnectDataTranslatorTest {
 
   @Test
   public void shouldThrowOnTypeMismatch() {
-    Schema schema = SchemaBuilder.struct()
+    final Schema schema = SchemaBuilder.struct()
         .field("FIELD", SchemaBuilder.INT32_SCHEMA)
         .build();
 
-    Schema badSchema = SchemaBuilder.struct()
+    final Schema badSchema = SchemaBuilder.struct()
         .field("FIELD", SchemaBuilder.STRING_SCHEMA)
         .build();
-    Struct badData = new Struct(badSchema);
+    final Struct badData = new Struct(badSchema);
     badData.put("FIELD", "fubar");
 
     try {
@@ -85,59 +85,59 @@ public class ConnectDataTranslatorTest {
 
   @Test
   public void shouldTranslateStructFieldWithDifferentCase() {
-    Schema structSchema = SchemaBuilder
+    final Schema structSchema = SchemaBuilder
         .struct()
         .field("INT", SchemaBuilder.INT32_SCHEMA)
         .build();
-    Schema rowSchema = SchemaBuilder
+    final Schema rowSchema = SchemaBuilder
         .struct()
         .field("STRUCT", structSchema)
         .build();
 
-    Schema dataStructSchema = SchemaBuilder
+    final Schema dataStructSchema = SchemaBuilder
         .struct()
         .field("iNt", SchemaBuilder.INT32_SCHEMA)
         .build();
-    Schema dataRowSchema = SchemaBuilder
+    final Schema dataRowSchema = SchemaBuilder
         .struct()
         .field("STRUCT", dataStructSchema)
         .build();
-    Struct connectStruct = new Struct(dataRowSchema);
-    Struct structColumn = new Struct(dataStructSchema);
+    final Struct connectStruct = new Struct(dataRowSchema);
+    final Struct structColumn = new Struct(dataStructSchema);
     structColumn.put("iNt", 123);
     connectStruct.put("STRUCT", structColumn);
 
-    GenericRow row = connectToKsqlTranslator.toKsqlRow(
+    final GenericRow row = connectToKsqlTranslator.toKsqlRow(
         rowSchema, dataRowSchema, connectStruct);
 
     assertThat(row.getColumns().size(), equalTo(1));
     assertThat(row.getColumnValue(0), instanceOf(Struct.class));
-    Struct connectStructColumn = row.getColumnValue(0);
+    final Struct connectStructColumn = row.getColumnValue(0);
     assertThat(connectStructColumn.schema(), equalTo(structSchema));
     assertThat(connectStructColumn.get("INT"), equalTo(123));
   }
 
   @Test
   public void shouldThrowIfNestedFieldTypeDoesntMatch() {
-    Schema structSchema = SchemaBuilder
+    final Schema structSchema = SchemaBuilder
         .struct()
         .field("INT", SchemaBuilder.INT32_SCHEMA)
         .build();
-    Schema rowSchema = SchemaBuilder
+    final Schema rowSchema = SchemaBuilder
         .struct()
         .field("STRUCT", structSchema)
         .build();
 
-    Schema dataStructSchema = SchemaBuilder
+    final Schema dataStructSchema = SchemaBuilder
         .struct()
         .field("INT", SchemaBuilder.STRING_SCHEMA)
         .build();
-    Schema dataRowSchema = SchemaBuilder
+    final Schema dataRowSchema = SchemaBuilder
         .struct()
         .field("STRUCT", dataStructSchema)
         .build();
-    Struct connectStruct = new Struct(dataRowSchema);
-    Struct structColumn = new Struct(dataStructSchema);
+    final Struct connectStruct = new Struct(dataRowSchema);
+    final Struct structColumn = new Struct(dataStructSchema);
     structColumn.put("INT", "123");
     connectStruct.put("STRUCT", structColumn);
 
@@ -152,13 +152,13 @@ public class ConnectDataTranslatorTest {
 
   @Test
   public void shouldTranslateNullValueCorrectly() {
-    Schema rowSchema = SchemaBuilder.struct()
+    final Schema rowSchema = SchemaBuilder.struct()
         .field("INT", SchemaBuilder.OPTIONAL_INT32_SCHEMA)
         .build();
 
-    Struct connectStruct = new Struct(rowSchema);
+    final Struct connectStruct = new Struct(rowSchema);
 
-    GenericRow row = connectToKsqlTranslator.toKsqlRow(
+    final GenericRow row = connectToKsqlTranslator.toKsqlRow(
         rowSchema, rowSchema, connectStruct);
     assertThat(row.getColumns().size(), equalTo(1));
     assertThat(row.getColumnValue(0), is(nullValue()));
@@ -166,23 +166,23 @@ public class ConnectDataTranslatorTest {
 
   @Test
   public void shouldTranslateMissingStructFieldToNull() {
-    Schema structSchema = SchemaBuilder
+    final Schema structSchema = SchemaBuilder
         .struct()
         .field("INT", SchemaBuilder.INT32_SCHEMA)
         .build();
-    Schema rowSchema = SchemaBuilder
+    final Schema rowSchema = SchemaBuilder
         .struct()
         .field("STRUCT", structSchema)
         .build();
 
-    Schema dataRowSchema = SchemaBuilder
+    final Schema dataRowSchema = SchemaBuilder
         .struct()
         .field("OTHER", SchemaBuilder.INT32_SCHEMA)
         .build();
-    Struct connectStruct = new Struct(dataRowSchema);
+    final Struct connectStruct = new Struct(dataRowSchema);
     connectStruct.put("OTHER", 123);
 
-    GenericRow row = connectToKsqlTranslator.toKsqlRow(
+    final GenericRow row = connectToKsqlTranslator.toKsqlRow(
         rowSchema, rowSchema, connectStruct);
     assertThat(row.getColumns().size(), equalTo(1));
     assertThat(row.getColumnValue(0), is(nullValue()));
