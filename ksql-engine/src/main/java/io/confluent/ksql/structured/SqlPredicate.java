@@ -78,6 +78,11 @@ public class SqlPredicate {
 
     try {
       ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
+      ee.setDefaultImports(new String[]{"org.apache.kafka.connect.data.Struct",
+          "java.util.HashMap",
+          "java.util.Map",
+          "java.util.List",
+          "java.util.ArrayList"});
 
       // The expression will have two "int" parameters: "a" and "b".
       ee.setParameters(parameterNames, parameterTypes);

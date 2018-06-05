@@ -330,7 +330,7 @@ public class KsqlEngine implements Closeable {
         Statement statement = statementInfo.getLeft();
         if (statement instanceof Query
             || statement instanceof CreateAsSelect) {
-          statement = new StatementRewiteForStruct(statement, metaStore, statementInfo.getRight())
+          statement = new StatementRewiteForStruct(statement, tempMetaStoreForParser, statementInfo.getRight())
               .rewriteForStruct();
         }
 

@@ -223,11 +223,12 @@ public class SqlToJavaVisitor {
       String name = node.getName().getSuffix();
       String javaReturnType;
       KsqlFunction ksqlFunction = functionRegistry.getFunction(name);
+      Schema functionReturnSchema = ksqlFunction.getReturnType();
       if (name.equalsIgnoreCase("FETCH_FIELD_FROM_STRUCT")) {
         ExpressionTypeManager expressionTypeManager = new ExpressionTypeManager(schema,
                                                                                 functionRegistry);
-        Schema returnSchema = expressionTypeManager.getExpressionType(node);
-        javaReturnType = SchemaUtil.getJavaType(returnSchema).getSimpleName();
+        functionReturnSchema = expressionTypeManager.getExpressionType(node);
+        javaReturnType = SchemaUtil.getJavaType(functionReturnSchema).getSimpleName();
       } else {
         javaReturnType = SchemaUtil.getJavaType(ksqlFunction.getReturnType()).getSimpleName();
       }
@@ -245,7 +246,7 @@ public class SqlToJavaVisitor {
       }
       builder.append(")");
       builder.append(")");
-      return new Pair<>(builder.toString(), ksqlFunction.getReturnType());
+      return new Pair<>(builder.toString(), functionReturnSchema);
     }
 
     @Override
