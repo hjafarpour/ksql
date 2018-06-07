@@ -44,6 +44,21 @@ public class Table
     this(Optional.of(location), name, isStdOut);
   }
 
+  public Table(NodeLocation location,
+      QualifiedName name,
+      boolean isStdOut,
+      Map<String, Expression> properties) {
+    this(Optional.ofNullable(location), name, isStdOut);
+    this.setProperties(properties);
+  }
+
+  public Table(QualifiedName name,
+      boolean isStdOut,
+      Map<String, Expression> properties) {
+    this(Optional.empty(), name, isStdOut);
+    this.setProperties(properties);
+  }
+
   private Table(Optional<NodeLocation> location, QualifiedName name, boolean isStdOut) {
     super(location);
     this.name = name;

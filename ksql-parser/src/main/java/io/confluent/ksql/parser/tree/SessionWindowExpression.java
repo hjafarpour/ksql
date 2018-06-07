@@ -39,10 +39,23 @@ public class SessionWindowExpression extends KsqlWindowExpression {
   }
 
   private SessionWindowExpression(Optional<NodeLocation> location, long gap,
-                                  TimeUnit sizeUnit) {
+      TimeUnit sizeUnit) {
     super(location);
     this.gap = gap;
     this.sizeUnit = sizeUnit;
+  }
+
+  public long getGap() {
+    return gap;
+  }
+
+  public TimeUnit getSizeUnit() {
+    return sizeUnit;
+  }
+
+  @Override
+  public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    return visitor.visitSessionWindowExpression(this, context);
   }
 
   @Override
@@ -70,9 +83,9 @@ public class SessionWindowExpression extends KsqlWindowExpression {
   @SuppressWarnings("unchecked")
   @Override
   public KTable applyAggregate(final KGroupedStream groupedStream,
-                               final Initializer initializer,
-                               final UdafAggregator aggregator,
-                               final Materialized<String, GenericRow, ?> materialized) {
+      final Initializer initializer,
+      final UdafAggregator aggregator,
+      final Materialized<String, GenericRow, ?> materialized) {
     return groupedStream.windowedBy(SessionWindows.with(sizeUnit.toMillis(gap)))
         .aggregate(initializer, aggregator, aggregator.getMerger(),
             materialized);

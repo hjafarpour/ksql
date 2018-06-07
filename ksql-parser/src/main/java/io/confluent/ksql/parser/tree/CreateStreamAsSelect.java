@@ -33,15 +33,26 @@ public class CreateStreamAsSelect extends Statement implements CreateAsSelect {
   private final Map<String, Expression> properties;
   private final Optional<Expression> partitionByColumn;
 
-  public CreateStreamAsSelect(NodeLocation location, QualifiedName name, Query query,
-                      boolean notExists, Map<String, Expression> properties,
-                              Optional<Expression> partitionByColumn) {
+  public CreateStreamAsSelect(QualifiedName name,
+      Query query,
+      boolean notExists,
+      Map<String, Expression> properties,
+      Optional<Expression> partitionByColumn) {
+    this(Optional.empty(), name, query, notExists, properties, partitionByColumn);
+  }
+
+  public CreateStreamAsSelect(NodeLocation location,
+      QualifiedName name,
+      Query query,
+      boolean notExists,
+      Map<String, Expression> properties,
+      Optional<Expression> partitionByColumn) {
     this(Optional.of(location), name, query, notExists, properties, partitionByColumn);
   }
 
   private CreateStreamAsSelect(Optional<NodeLocation> location, QualifiedName name,
-                               Query query, boolean notExists,
-                       Map<String, Expression> properties, Optional<Expression> partitionByColumn) {
+      Query query, boolean notExists,
+      Map<String, Expression> properties, Optional<Expression> partitionByColumn) {
     super(location);
     this.name = requireNonNull(name, "stream is null");
     this.query = query;
@@ -91,9 +102,9 @@ public class CreateStreamAsSelect extends Statement implements CreateAsSelect {
     }
     CreateStreamAsSelect o = (CreateStreamAsSelect) obj;
     return Objects.equals(name, o.name)
-           && Objects.equals(query, o.query)
-           && Objects.equals(notExists, o.notExists)
-           && Objects.equals(properties, o.properties);
+        && Objects.equals(query, o.query)
+        && Objects.equals(notExists, o.notExists)
+        && Objects.equals(properties, o.properties);
   }
 
   @Override
