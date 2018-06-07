@@ -68,16 +68,16 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testSimpleQuery fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testSimpleQuery fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
-    Assert.assertTrue("testSimpleQuery fails", querySpecification.getSelect().getSelectItems().size() == 3);
+    assertThat("testSimpleQuery fails", querySpecification.getSelect().getSelectItems().size() == 3);
     assertThat(querySpecification.getFrom(), not(nullValue()));
-    Assert.assertTrue("testSimpleQuery fails", querySpecification.getWhere().isPresent());
-    Assert.assertTrue("testSimpleQuery fails", querySpecification.getWhere().get() instanceof ComparisonExpression);
+    assertThat("testSimpleQuery fails", querySpecification.getWhere().isPresent());
+    assertThat("testSimpleQuery fails", querySpecification.getWhere().get() instanceof ComparisonExpression);
     ComparisonExpression comparisonExpression = (ComparisonExpression)querySpecification.getWhere().get();
-    Assert.assertTrue("testSimpleQuery fails", comparisonExpression.getType().getValue().equalsIgnoreCase(">"));
+    assertThat("testSimpleQuery fails", comparisonExpression.getType().getValue(), equalTo(">"));
 
   }
 
@@ -89,16 +89,16 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testProjection fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testProjection fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
-    Assert.assertTrue("testProjection fails", querySpecification.getSelect().getSelectItems().size() == 3);
-    Assert.assertTrue("testProjection fails", querySpecification.getSelect().getSelectItems().get(0) instanceof SingleColumn);
+    assertThat("testProjection fails", querySpecification.getSelect().getSelectItems().size() , equalTo(3));
+    assertThat("testProjection fails", querySpecification.getSelect().getSelectItems().get(0), instanceOf(SingleColumn.class));
     SingleColumn column0 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(0);
-    Assert.assertTrue("testProjection fails", column0.getAlias().get().equalsIgnoreCase("COL0"));
-    Assert.assertTrue("testProjection fails", column0.getExpression().toString().equalsIgnoreCase("TEST1.COL0"));
+    assertThat("testProjection fails", column0.getAlias().get(), equalTo("COL0"));
+    assertThat("testProjection fails", column0.getExpression().toString(), equalTo("TEST1.COL0"));
   }
 
   @Test
@@ -109,24 +109,22 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testProjectionWithArrayMap fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testProjectionWithArrayMap fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
-    Assert.assertTrue("testProjectionWithArrayMap fails", querySpecification.getSelect().getSelectItems()
-        .size() == 5);
-    Assert.assertTrue("testProjectionWithArrayMap fails", querySpecification.getSelect().getSelectItems().get(0) instanceof SingleColumn);
+    assertThat("testProjectionWithArrayMap fails", querySpecification.getSelect().getSelectItems()
+        .size(), equalTo(5));
+    assertThat("testProjectionWithArrayMap fails", querySpecification.getSelect().getSelectItems().get(0) instanceof SingleColumn);
     SingleColumn column0 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(0);
-    Assert.assertTrue("testProjectionWithArrayMap fails", column0.getAlias().get().equalsIgnoreCase("COL0"));
-    Assert.assertTrue("testProjectionWithArrayMap fails", column0.getExpression().toString().equalsIgnoreCase("TEST1.COL0"));
+    assertThat("testProjectionWithArrayMap fails", column0.getAlias().get(), equalTo("COL0"));
+    assertThat("testProjectionWithArrayMap fails", column0.getExpression().toString(), equalTo("TEST1.COL0"));
 
     SingleColumn column3 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(3);
     SingleColumn column4 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(4);
-    Assert.assertTrue("testProjectionWithArrayMap fails", column3.getExpression().toString()
-        .equalsIgnoreCase("TEST1.COL4[0]"));
-    Assert.assertTrue("testProjectionWithArrayMap fails", column4.getExpression().toString()
-        .equalsIgnoreCase("TEST1.COL5['key1']"));
+    assertThat("testProjectionWithArrayMap fails", column3.getExpression().toString(), equalTo("TEST1.COL4[0]"));
+    assertThat("testProjectionWithArrayMap fails", column4.getExpression().toString(), equalTo("TEST1.COL5['key1']"));
   }
 
   @Test
@@ -136,16 +134,16 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testProjectFilter fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testProjectFilter fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
 
-    Assert.assertTrue("testProjectFilter fails", querySpecification.getWhere().get() instanceof ComparisonExpression);
+    assertThat("testProjectFilter fails", querySpecification.getWhere().get(), instanceOf(ComparisonExpression.class));
     ComparisonExpression comparisonExpression = (ComparisonExpression)querySpecification.getWhere().get();
-    Assert.assertTrue("testProjectFilter fails", comparisonExpression.toString().equalsIgnoreCase("(TEST1.COL0 > 100)"));
-    Assert.assertTrue("testProjectFilter fails", querySpecification.getSelect().getSelectItems().size() == 3);
+    assertThat("testProjectFilter fails", comparisonExpression.toString(), equalTo("(TEST1.COL0 > 100)"));
+    assertThat("testProjectFilter fails", querySpecification.getSelect().getSelectItems().size(), equalTo(3));
 
   }
 
@@ -156,14 +154,14 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testBinaryExpression fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testBinaryExpression fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
     SingleColumn column0 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(0);
-    Assert.assertTrue("testBinaryExpression fails", column0.getAlias().get().equalsIgnoreCase("KSQL_COL_0"));
-    Assert.assertTrue("testBinaryExpression fails", column0.getExpression().toString().equalsIgnoreCase("(TEST1.COL0 + 10)"));
+    assertThat("testBinaryExpression fails", column0.getAlias().get(), equalTo("KSQL_COL_0"));
+    assertThat("testBinaryExpression fails", column0.getExpression().toString(), equalTo("(TEST1.COL0 + 10)"));
   }
 
   @Test
@@ -173,14 +171,14 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testProjection fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testProjection fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
     SingleColumn column0 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(0);
-    Assert.assertTrue("testBooleanExpression fails", column0.getAlias().get().equalsIgnoreCase("KSQL_COL_0"));
-    Assert.assertTrue("testBooleanExpression fails", column0.getExpression().toString().equalsIgnoreCase("(TEST1.COL0 = 10)"));
+    assertThat("testBooleanExpression fails", column0.getAlias().get(), equalTo("KSQL_COL_0"));
+    assertThat("testBooleanExpression fails", column0.getExpression().toString(), equalTo("(TEST1.COL0 = 10)"));
   }
 
   @Test
@@ -190,34 +188,34 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testLiterals fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testLiterals fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
     SingleColumn column0 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(0);
-    Assert.assertTrue("testLiterals fails", column0.getAlias().get().equalsIgnoreCase("KSQL_COL_0"));
-    Assert.assertTrue("testLiterals fails", column0.getExpression().toString().equalsIgnoreCase("10"));
+    assertThat("testLiterals fails", column0.getAlias().get(), equalTo("KSQL_COL_0"));
+    assertThat("testLiterals fails", column0.getExpression().toString(), equalTo("10"));
 
     SingleColumn column1 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(1);
-    Assert.assertTrue("testLiterals fails", column1.getAlias().get().equalsIgnoreCase("COL2"));
-    Assert.assertTrue("testLiterals fails", column1.getExpression().toString().equalsIgnoreCase("TEST1.COL2"));
+    assertThat("testLiterals fails", column1.getAlias().get(), equalTo("COL2"));
+    assertThat("testLiterals fails", column1.getExpression().toString(), equalTo("TEST1.COL2"));
 
     SingleColumn column2 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(2);
-    Assert.assertTrue("testLiterals fails", column2.getAlias().get().equalsIgnoreCase("KSQL_COL_2"));
-    Assert.assertTrue("testLiterals fails", column2.getExpression().toString().equalsIgnoreCase("'test'"));
+    assertThat("testLiterals fails", column2.getAlias().get(), equalTo("KSQL_COL_2"));
+    assertThat("testLiterals fails", column2.getExpression().toString(), equalTo("'test'"));
 
     SingleColumn column3 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(3);
-    Assert.assertTrue("testLiterals fails", column3.getAlias().get().equalsIgnoreCase("KSQL_COL_3"));
-    Assert.assertTrue("testLiterals fails", column3.getExpression().toString().equalsIgnoreCase("2.5"));
+    assertThat("testLiterals fails", column3.getAlias().get(), equalTo("KSQL_COL_3"));
+    assertThat("testLiterals fails", column3.getExpression().toString(), equalTo("2.5"));
 
     SingleColumn column4 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(4);
-    Assert.assertTrue("testLiterals fails", column4.getAlias().get().equalsIgnoreCase("KSQL_COL_4"));
-    Assert.assertTrue("testLiterals fails", column4.getExpression().toString().equalsIgnoreCase("true"));
+    assertThat("testLiterals fails", column4.getAlias().get(), equalTo("KSQL_COL_4"));
+    assertThat("testLiterals fails", column4.getExpression().toString(), equalTo("true"));
 
     SingleColumn column5 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(5);
-    Assert.assertTrue("testLiterals fails", column5.getAlias().get().equalsIgnoreCase("KSQL_COL_5"));
-    Assert.assertTrue("testLiterals fails", column5.getExpression().toString().equalsIgnoreCase("-5"));
+    assertThat("testLiterals fails", column5.getAlias().get(), equalTo("KSQL_COL_5"));
+    assertThat("testLiterals fails", column5.getExpression().toString(), equalTo("-5"));
   }
 
   @Test
@@ -229,22 +227,22 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testProjection fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testProjection fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
     SingleColumn column0 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(0);
-    Assert.assertTrue("testProjection fails", column0.getAlias().get().equalsIgnoreCase("KSQL_COL_0"));
-    Assert.assertTrue("testProjection fails", column0.getExpression().toString().equalsIgnoreCase("10"));
+    assertThat("testProjection fails", column0.getAlias().get(), equalTo("KSQL_COL_0"));
+    assertThat("testProjection fails", column0.getExpression().toString(), equalTo("10"));
 
     SingleColumn column1 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(1);
-    Assert.assertTrue("testProjection fails", column1.getAlias().get().equalsIgnoreCase("COL2"));
-    Assert.assertTrue("testProjection fails", column1.getExpression().toString().equalsIgnoreCase("TEST1.COL2"));
+    assertThat("testProjection fails", column1.getAlias().get(), equalTo("COL2"));
+    assertThat("testProjection fails", column1.getExpression().toString(), equalTo("TEST1.COL2"));
 
     SingleColumn column2 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(2);
-    Assert.assertTrue("testProjection fails", column2.getAlias().get().equalsIgnoreCase("KSQL_COL_2"));
-    Assert.assertTrue("testProjection fails", column2.getExpression().toString().equalsIgnoreCase("'test'"));
+    assertThat("testProjection fails", column2.getAlias().get(), equalTo("KSQL_COL_2"));
+    assertThat("testProjection fails", column2.getExpression().toString(), equalTo("'test'"));
 
   }
 
@@ -258,17 +256,17 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testSimpleLeftJoin fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testSimpleLeftJoin fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
-    Assert.assertTrue("testSimpleLeftJoin fails", querySpecification.getFrom() instanceof Join);
+    assertThat("testSimpleLeftJoin fails", querySpecification.getFrom() instanceof Join);
     Join join = (Join) querySpecification.getFrom();
-    Assert.assertTrue("testSimpleLeftJoin fails", join.getType().toString().equalsIgnoreCase("LEFT"));
+    assertThat("testSimpleLeftJoin fails", join.getType().toString(), equalTo("LEFT"));
 
-    Assert.assertTrue("testSimpleLeftJoin fails", ((AliasedRelation)join.getLeft()).getAlias().equalsIgnoreCase("T1"));
-    Assert.assertTrue("testSimpleLeftJoin fails", ((AliasedRelation)join.getRight()).getAlias().equalsIgnoreCase("T2"));
+    assertThat("testSimpleLeftJoin fails", ((AliasedRelation)join.getLeft()).getAlias(), equalTo("T1"));
+    assertThat("testSimpleLeftJoin fails", ((AliasedRelation)join.getRight()).getAlias(), equalTo("T2"));
 
   }
 
@@ -282,19 +280,19 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testLeftJoinWithFilter fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testLeftJoinWithFilter fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
-    Assert.assertTrue("testLeftJoinWithFilter fails", querySpecification.getFrom() instanceof Join);
+    assertThat("testLeftJoinWithFilter fails", querySpecification.getFrom() instanceof Join);
     Join join = (Join) querySpecification.getFrom();
-    Assert.assertTrue("testLeftJoinWithFilter fails", join.getType().toString().equalsIgnoreCase("LEFT"));
+    assertThat("testLeftJoinWithFilter fails", join.getType().toString(), equalTo("LEFT"));
 
-    Assert.assertTrue("testLeftJoinWithFilter fails", ((AliasedRelation)join.getLeft()).getAlias().equalsIgnoreCase("T1"));
-    Assert.assertTrue("testLeftJoinWithFilter fails", ((AliasedRelation)join.getRight()).getAlias().equalsIgnoreCase("T2"));
+    assertThat("testLeftJoinWithFilter fails", ((AliasedRelation)join.getLeft()).getAlias(), equalTo("T1"));
+    assertThat("testLeftJoinWithFilter fails", ((AliasedRelation)join.getRight()).getAlias(), equalTo("T2"));
 
-    Assert.assertTrue("testLeftJoinWithFilter fails", querySpecification.getWhere().get().toString().equalsIgnoreCase("(T2.COL2 = 'test')"));
+    assertThat("testLeftJoinWithFilter fails", querySpecification.getWhere().get().toString(), equalTo("(T2.COL2 = 'test')"));
   }
 
   @Test
@@ -304,12 +302,12 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testSelectAll fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testSelectAll fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
-    Assert.assertTrue("testSelectAll fails", querySpecification.getSelect().getSelectItems()
+    assertThat("testSelectAll fails", querySpecification.getSelect().getSelectItems()
         .size() == 8);
   }
 
@@ -322,17 +320,17 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testLeftJoinWithFilter fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testLeftJoinWithFilter fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
-    Assert.assertTrue("testSelectAllJoin fails", querySpecification.getFrom() instanceof Join);
+    assertThat("testSelectAllJoin fails", querySpecification.getFrom() instanceof Join);
     Join join = (Join) querySpecification.getFrom();
-    Assert.assertTrue("testSelectAllJoin fails", querySpecification.getSelect().getSelectItems
+    assertThat("testSelectAllJoin fails", querySpecification.getSelect().getSelectItems
         ().size() == 15);
-    Assert.assertTrue("testLeftJoinWithFilter fails", ((AliasedRelation)join.getLeft()).getAlias().equalsIgnoreCase("T1"));
-    Assert.assertTrue("testLeftJoinWithFilter fails", ((AliasedRelation)join.getRight()).getAlias().equalsIgnoreCase("T2"));
+    assertThat("testLeftJoinWithFilter fails", ((AliasedRelation)join.getLeft()).getAlias(), equalTo("T1"));
+    assertThat("testLeftJoinWithFilter fails", ((AliasedRelation)join.getRight()).getAlias(), equalTo("T2"));
   }
 
   @Test
@@ -342,23 +340,23 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSimpleQuery fails", rewrittenStatement instanceof Query);
+    assertThat("testSimpleQuery fails", rewrittenStatement, instanceOf(Query.class));
 
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testSelectAll fails", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testSelectAll fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
 
     SingleColumn column0 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(0);
-    Assert.assertTrue("testProjection fails", column0.getAlias().get().equalsIgnoreCase("KSQL_COL_0"));
-    Assert.assertTrue("testProjection fails", column0.getExpression().toString().equalsIgnoreCase("LCASE(T1.COL1)"));
+    assertThat("testProjection fails", column0.getAlias().get(), equalTo("KSQL_COL_0"));
+    assertThat("testProjection fails", column0.getExpression().toString(), equalTo("LCASE(T1.COL1)"));
 
     SingleColumn column1 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(1);
-    Assert.assertTrue("testProjection fails", column1.getAlias().get().equalsIgnoreCase("KSQL_COL_1"));
-    Assert.assertTrue("testProjection fails", column1.getExpression().toString().equalsIgnoreCase("CONCAT(T1.COL2, 'hello')"));
+    assertThat("testProjection fails", column1.getAlias().get(), equalTo("KSQL_COL_1"));
+    assertThat("testProjection fails", column1.getExpression().toString(), equalTo("CONCAT(T1.COL2, 'hello')"));
 
     SingleColumn column2 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(2);
-    Assert.assertTrue("testProjection fails", column2.getAlias().get().equalsIgnoreCase("KSQL_COL_2"));
-    Assert.assertTrue("testProjection fails", column2.getExpression().toString().equalsIgnoreCase("FLOOR(ABS(T1.COL3))"));
+    assertThat("testProjection fails", column2.getAlias().get(), equalTo("KSQL_COL_2"));
+    assertThat("testProjection fails", column2.getExpression().toString(), equalTo("FLOOR(ABS(T1.COL3))"));
   }
 
   @Test
@@ -372,12 +370,12 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testCreateStream failed.", rewrittenStatement instanceof CreateStream);
+    assertThat("testCreateStream failed.", rewrittenStatement instanceof CreateStream);
     CreateStream createStream = (CreateStream)rewrittenStatement;
-    Assert.assertTrue("testCreateStream failed.", createStream.getName().toString().equalsIgnoreCase("ORDERS"));
-    Assert.assertTrue("testCreateStream failed.", createStream.getElements().size() == 4);
-    Assert.assertTrue("testCreateStream failed.", createStream.getElements().get(0).getName().toString().equalsIgnoreCase("ordertime"));
-    Assert.assertTrue("testCreateStream failed.", createStream.getProperties().get(DdlConfig.TOPIC_NAME_PROPERTY).toString().equalsIgnoreCase("'orders_topic'"));
+    assertThat("testCreateStream failed.", createStream.getName().toString(), equalTo("ORDERS"));
+    assertThat("testCreateStream failed.", createStream.getElements().size() == 4);
+    assertThat("testCreateStream failed.", createStream.getElements().get(0).getName().toString(), equalTo("ORDERTIME"));
+    assertThat("testCreateStream failed.", createStream.getProperties().get(DdlConfig.TOPIC_NAME_PROPERTY).toString(), equalTo("'orders_topic'"));
   }
 
   @Test
@@ -392,7 +390,7 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testCreateStream failed.", rewrittenStatement instanceof CreateStream);
+    assertThat("testCreateStream failed.", rewrittenStatement instanceof CreateStream);
     CreateStream createStream = (CreateStream)rewrittenStatement;
     assertThat(createStream.getName().toString().toUpperCase(), equalTo("ORDERS"));
     assertThat(createStream.getElements().size(), equalTo(7));
@@ -416,16 +414,16 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testCreateStream failed.", rewrittenStatement instanceof CreateStream);
+    assertThat("testCreateStream failed.", rewrittenStatement instanceof CreateStream);
     CreateStream createStream = (CreateStream)rewrittenStatement;
 
-    Assert.assertTrue("testCreateStream failed.", createStream.getName().toString().equalsIgnoreCase("ORDERS"));
-    Assert.assertTrue("testCreateStream failed.", createStream.getElements().size() == 4);
-    Assert.assertTrue("testCreateStream failed.", createStream.getElements().get(0).getName().toString().equalsIgnoreCase("ordertime"));
-    Assert.assertTrue("testCreateStream failed.", createStream.getProperties().get(DdlConfig.KAFKA_TOPIC_NAME_PROPERTY).toString().equalsIgnoreCase("'orders_topic'"));
-    Assert.assertTrue("testCreateStream failed.", createStream.getProperties().get(DdlConfig
-        .VALUE_FORMAT_PROPERTY).toString().equalsIgnoreCase("'avro'"));
-    Assert.assertTrue("testCreateStream failed.", createStream.getProperties().get(DdlConfig.AVRO_SCHEMA_FILE).toString().equalsIgnoreCase("'/Users/hojjat/avro_order_schema.avro'"));
+    assertThat("testCreateStream failed.", createStream.getName().toString(), equalTo("ORDERS"));
+    assertThat("testCreateStream failed.", createStream.getElements().size() == 4);
+    assertThat("testCreateStream failed.", createStream.getElements().get(0).getName().toString(), equalTo("ORDERTIME"));
+    assertThat("testCreateStream failed.", createStream.getProperties().get(DdlConfig.KAFKA_TOPIC_NAME_PROPERTY).toString(), equalTo("'orders_topic'"));
+    assertThat("testCreateStream failed.", createStream.getProperties().get(DdlConfig
+        .VALUE_FORMAT_PROPERTY).toString(), equalTo("'avro'"));
+    assertThat("testCreateStream failed.", createStream.getProperties().get(DdlConfig.AVRO_SCHEMA_FILE).toString(), equalTo("'/Users/hojjat/avro_order_schema.avro'"));
   }
 
   @Test
@@ -436,12 +434,12 @@ public class StatementRewriterTest {
     Statement statement = KSQL_PARSER.buildAst(queryStr, metaStore).get(0);
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
-    Assert.assertTrue("testRegisterTopic failed.", rewrittenStatement instanceof CreateTable);
+    assertThat("testRegisterTopic failed.", rewrittenStatement instanceof CreateTable);
     CreateTable createTable = (CreateTable)rewrittenStatement;
-    Assert.assertTrue("testCreateTable failed.", createTable.getName().toString().equalsIgnoreCase("USERS"));
-    Assert.assertTrue("testCreateTable failed.", createTable.getElements().size() == 4);
-    Assert.assertTrue("testCreateTable failed.", createTable.getElements().get(0).getName().toString().equalsIgnoreCase("usertime"));
-    Assert.assertTrue("testCreateTable failed.", createTable.getProperties().get(DdlConfig.TOPIC_NAME_PROPERTY).toString().equalsIgnoreCase("'users_topic'"));
+    assertThat("testCreateTable failed.", createTable.getName().toString(), equalTo("USERS"));
+    assertThat("testCreateTable failed.", createTable.getElements().size() == 4);
+    assertThat("testCreateTable failed.", createTable.getElements().get(0).getName().toString(), equalTo("USERTIME"));
+    assertThat("testCreateTable failed.", createTable.getProperties().get(DdlConfig.TOPIC_NAME_PROPERTY).toString(), equalTo("'users_topic'"));
   }
 
   @Test
@@ -453,15 +451,15 @@ public class StatementRewriterTest {
     Statement statement = KSQL_PARSER.buildAst(queryStr, metaStore).get(0);
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
-    Assert.assertTrue("testRegisterTopic failed.", rewrittenStatement instanceof CreateTable);
+    assertThat("testRegisterTopic failed.", rewrittenStatement instanceof CreateTable);
     CreateTable createTable = (CreateTable)rewrittenStatement;
-    Assert.assertTrue("testCreateTable failed.", createTable.getName().toString().equalsIgnoreCase("USERS"));
-    Assert.assertTrue("testCreateTable failed.", createTable.getElements().size() == 4);
-    Assert.assertTrue("testCreateTable failed.", createTable.getElements().get(0).getName().toString().equalsIgnoreCase("usertime"));
-    Assert.assertTrue("testCreateTable failed.", createTable.getProperties().get(DdlConfig.KAFKA_TOPIC_NAME_PROPERTY)
-        .toString().equalsIgnoreCase("'users_topic'"));
-    Assert.assertTrue("testCreateTable failed.", createTable.getProperties().get(DdlConfig.VALUE_FORMAT_PROPERTY)
-        .toString().equalsIgnoreCase("'json'"));
+    assertThat("testCreateTable failed.", createTable.getName().toString(), equalTo("USERS"));
+    assertThat("testCreateTable failed.", createTable.getElements().size() == 4);
+    assertThat("testCreateTable failed.", createTable.getElements().get(0).getName().toString(), equalTo("USERTIME"));
+    assertThat("testCreateTable failed.", createTable.getProperties().get(DdlConfig.KAFKA_TOPIC_NAME_PROPERTY)
+        .toString(), equalTo("'users_topic'"));
+    assertThat("testCreateTable failed.", createTable.getProperties().get(DdlConfig.VALUE_FORMAT_PROPERTY)
+        .toString(), equalTo("'json'"));
   }
 
   @Test
@@ -476,14 +474,14 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testCreateStreamAsSelect failed.", rewrittenStatement instanceof CreateStreamAsSelect);
+    assertThat("testCreateStreamAsSelect failed.", rewrittenStatement instanceof CreateStreamAsSelect);
     CreateStreamAsSelect createStreamAsSelect = (CreateStreamAsSelect)rewrittenStatement;
-    Assert.assertTrue("testCreateTable failed.", createStreamAsSelect.getName().toString().equalsIgnoreCase("bigorders_json"));
-    Assert.assertTrue("testCreateTable failed.", createStreamAsSelect.getQuery().getQueryBody() instanceof QuerySpecification);
+    assertThat("testCreateTable failed.", createStreamAsSelect.getName().toString(), equalTo("BIGORDERS_JSON"));
+    assertThat("testCreateTable failed.", createStreamAsSelect.getQuery().getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification) createStreamAsSelect.getQuery().getQueryBody();
-    Assert.assertTrue("testCreateTable failed.", querySpecification.getSelect().getSelectItems().size() == 4);
-    Assert.assertTrue("testCreateTable failed.", querySpecification.getWhere().get().toString().equalsIgnoreCase("(ORDERS.ORDERUNITS > 5)"));
-    Assert.assertTrue("testCreateTable failed.", ((AliasedRelation)querySpecification.getFrom()).getAlias().equalsIgnoreCase("ORDERS"));
+    assertThat("testCreateTable failed.", querySpecification.getSelect().getSelectItems().size() == 4);
+    assertThat("testCreateTable failed.", querySpecification.getWhere().get().toString(), equalTo("(ORDERS.ORDERUNITS > 5)"));
+    assertThat("testCreateTable failed.", ((AliasedRelation)querySpecification.getFrom()).getAlias(), equalTo("ORDERS"));
   }
 
 
@@ -498,18 +496,18 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSelectTumblingWindow failed.", rewrittenStatement instanceof Query);
+    assertThat("testSelectTumblingWindow failed.", rewrittenStatement, instanceOf(Query.class));
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testSelectTumblingWindow failed.", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testSelectTumblingWindow failed.", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification) query.getQueryBody();
-    Assert.assertTrue("testCreateTable failed.", querySpecification.getSelect().getSelectItems
+    assertThat("testCreateTable failed.", querySpecification.getSelect().getSelectItems
         ().size() == 2);
-    Assert.assertTrue("testSelectTumblingWindow failed.", querySpecification.getWhere().get().toString().equalsIgnoreCase("(ORDERS.ORDERUNITS > 5)"));
-    Assert.assertTrue("testSelectTumblingWindow failed.", ((AliasedRelation)querySpecification.getFrom()).getAlias().equalsIgnoreCase("ORDERS"));
-    Assert.assertTrue("testSelectTumblingWindow failed.", querySpecification
+    assertThat("testSelectTumblingWindow failed.", querySpecification.getWhere().get().toString(), equalTo("(ORDERS.ORDERUNITS > 5)"));
+    assertThat("testSelectTumblingWindow failed.", ((AliasedRelation)querySpecification.getFrom()).getAlias(), equalTo("ORDERS"));
+    assertThat("testSelectTumblingWindow failed.", querySpecification
         .getWindowExpression().isPresent());
-    Assert.assertTrue("testSelectTumblingWindow failed.", querySpecification
-        .getWindowExpression().get().toString().equalsIgnoreCase(" WINDOW STREAMWINDOW  TUMBLING ( SIZE 30 SECONDS ) "));
+    assertThat("testSelectTumblingWindow failed.", querySpecification
+        .getWindowExpression().get().toString(), equalTo(" WINDOW STREAMWINDOW  TUMBLING ( SIZE 30 SECONDS ) "));
   }
 
   @Test
@@ -534,7 +532,7 @@ public class StatementRewriterTest {
     assertThat(querySpecification.getSelect().getSelectItems().size(), equalTo(2));
     assertThat(querySpecification.getWhere().get().toString(), equalTo("(ORDERS.ORDERUNITS > 5)"));
     assertThat(((AliasedRelation)querySpecification.getFrom()).getAlias().toUpperCase(), equalTo("ORDERS"));
-    Assert.assertTrue("window expression isn't present", querySpecification
+    assertThat("window expression isn't present", querySpecification
         .getWindowExpression().isPresent());
     assertThat(querySpecification.getWindowExpression().get().toString().toUpperCase(),
         equalTo(" WINDOW STREAMWINDOW  HOPPING ( SIZE 30 SECONDS , ADVANCE BY 5 SECONDS ) "));
@@ -557,18 +555,18 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSelectSessionWindow failed.", rewrittenStatement instanceof Query);
+    assertThat("testSelectSessionWindow failed.", rewrittenStatement, instanceOf(Query.class));
     Query query = (Query) rewrittenStatement;
-    Assert.assertTrue("testSelectSessionWindow failed.", query.getQueryBody() instanceof QuerySpecification);
+    assertThat("testSelectSessionWindow failed.", query.getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification) query.getQueryBody();
-    Assert.assertTrue("testCreateTable failed.", querySpecification.getSelect().getSelectItems
+    assertThat("testCreateTable failed.", querySpecification.getSelect().getSelectItems
         ().size() == 2);
-    Assert.assertTrue("testSelectSessionWindow failed.", querySpecification.getWhere().get().toString().equalsIgnoreCase("(ORDERS.ORDERUNITS > 5)"));
-    Assert.assertTrue("testSelectSessionWindow failed.", ((AliasedRelation)querySpecification.getFrom()).getAlias().equalsIgnoreCase("ORDERS"));
-    Assert.assertTrue("testSelectSessionWindow failed.", querySpecification
+    assertThat("testSelectSessionWindow failed.", querySpecification.getWhere().get().toString(), equalTo("(ORDERS.ORDERUNITS > 5)"));
+    assertThat("testSelectSessionWindow failed.", ((AliasedRelation)querySpecification.getFrom()).getAlias(), equalTo("ORDERS"));
+    assertThat("testSelectSessionWindow failed.", querySpecification
         .getWindowExpression().isPresent());
-    Assert.assertTrue("testSelectSessionWindow failed.", querySpecification
-        .getWindowExpression().get().toString().equalsIgnoreCase(" WINDOW STREAMWINDOW  SESSION "
+    assertThat("testSelectSessionWindow failed.", querySpecification
+        .getWindowExpression().get().toString(), equalTo(" WINDOW STREAMWINDOW  SESSION "
             + "( 30 SECONDS ) "));
   }
 
@@ -584,13 +582,13 @@ public class StatementRewriterTest {
     StatementRewriter statementRewriter = new StatementRewriter();
     Statement rewrittenStatement = (Statement) statementRewriter.process(statement, null);
 
-    Assert.assertTrue("testSelectTumblingWindow failed.", rewrittenStatement instanceof CreateStreamAsSelect);
+    assertThat("testSelectTumblingWindow failed.", rewrittenStatement instanceof CreateStreamAsSelect);
     CreateStreamAsSelect createStreamAsSelect = (CreateStreamAsSelect) rewrittenStatement;
-    Assert.assertTrue("testSelectTumblingWindow failed.", createStreamAsSelect.getQuery().getQueryBody()
-        instanceof QuerySpecification);
+    assertThat("testSelectTumblingWindow failed.", createStreamAsSelect.getQuery().getQueryBody()
+       , instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification)
         createStreamAsSelect.getQuery().getQueryBody();
-    Assert.assertTrue(querySpecification.getWhere().toString().equalsIgnoreCase("Optional[(((ORDERS.COL2 IS NULL) AND (ORDERS.COL3 IS NOT NULL)) OR ((ORDERS.COL3 * ORDERS.COL2) = 12))]"));
+    assertThat(querySpecification.getWhere().toString(), equalTo("Optional[(((ORDERS.COL2 IS NULL) AND (ORDERS.COL3 IS NOT NULL)) OR ((ORDERS.COL3 * ORDERS.COL2) = 12))]"));
   }
 
   @Test

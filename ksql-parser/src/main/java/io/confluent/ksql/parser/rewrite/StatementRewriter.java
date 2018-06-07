@@ -750,7 +750,7 @@ public class StatementRewriter extends DefaultAstVisitor<Node, Object> {
   protected Node visitTable(Table node, Object context) {
     Map<String, Expression> properties = node.getProperties().entrySet().stream()
         .collect(Collectors.toMap(
-            e -> e.getKey(),
+            Map.Entry::getKey,
             e -> (Expression) process(e.getValue(), context)
         ));
     if (node.getLocation().isPresent()) {
@@ -999,7 +999,7 @@ public class StatementRewriter extends DefaultAstVisitor<Node, Object> {
           node.isNotExists(),
           node.getProperties().entrySet().stream()
               .collect(Collectors.toMap(
-                  e -> e.getKey(),
+                  Map.Entry::getKey,
                   e -> (Expression) process(e.getValue(), context)
               ))
       );
@@ -1012,7 +1012,7 @@ public class StatementRewriter extends DefaultAstVisitor<Node, Object> {
           node.isNotExists(),
           node.getProperties().entrySet().stream()
               .collect(Collectors.toMap(
-                  e -> e.getKey(),
+                  Map.Entry::getKey,
                   e -> (Expression) process(e.getValue(), context)
               ))
       );
@@ -1027,7 +1027,7 @@ public class StatementRewriter extends DefaultAstVisitor<Node, Object> {
           node.isNotExists(),
           node.getProperties().entrySet().stream()
               .collect(Collectors.toMap(
-                  e -> e.getKey(),
+                  Map.Entry::getKey,
                   e -> (Expression) process(e.getValue(), context)
               )),
           node.getPartitionByColumn().isPresent()
@@ -1042,7 +1042,7 @@ public class StatementRewriter extends DefaultAstVisitor<Node, Object> {
           node.isNotExists(),
           node.getProperties().entrySet().stream()
               .collect(Collectors.toMap(
-                  e -> e.getKey(),
+                  Map.Entry::getKey,
                   e -> (Expression) process(e.getValue(), context)
               )),
           node.getPartitionByColumn().isPresent()
@@ -1064,7 +1064,7 @@ public class StatementRewriter extends DefaultAstVisitor<Node, Object> {
           node.isNotExists(),
           node.getProperties().entrySet().stream()
               .collect(Collectors.toMap(
-                  e -> e.getKey(),
+                  Map.Entry::getKey,
                   e -> (Expression) process(e.getValue(), context)
               )));
     } else {
@@ -1075,7 +1075,7 @@ public class StatementRewriter extends DefaultAstVisitor<Node, Object> {
           node.isNotExists(),
           node.getProperties().entrySet().stream()
               .collect(Collectors.toMap(
-                  e -> e.getKey(),
+                  Map.Entry::getKey,
                   e -> (Expression) process(e.getValue(), context)
               )));
     }
