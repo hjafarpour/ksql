@@ -39,10 +39,23 @@ public class TumblingWindowExpression extends KsqlWindowExpression {
   }
 
   private TumblingWindowExpression(Optional<NodeLocation> location, long size,
-                                   TimeUnit sizeUnit) {
+      TimeUnit sizeUnit) {
     super(location);
     this.size = size;
     this.sizeUnit = sizeUnit;
+  }
+
+  public long getSize() {
+    return size;
+  }
+
+  public TimeUnit getSizeUnit() {
+    return sizeUnit;
+  }
+
+  @Override
+  public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    return visitor.visitTumblingWindowExpression(this, context);
   }
 
   @Override
@@ -70,9 +83,9 @@ public class TumblingWindowExpression extends KsqlWindowExpression {
   @SuppressWarnings("unchecked")
   @Override
   public KTable applyAggregate(final KGroupedStream groupedStream,
-                               final Initializer initializer,
-                               final UdafAggregator aggregator,
-                               final Materialized<String, GenericRow, ?> materialized) {
+      final Initializer initializer,
+      final UdafAggregator aggregator,
+      final Materialized<String, GenericRow, ?> materialized) {
     return groupedStream.windowedBy(TimeWindows.of(sizeUnit.toMillis(size)))
         .aggregate(initializer, aggregator, materialized);
 

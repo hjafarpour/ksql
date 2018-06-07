@@ -26,6 +26,7 @@ public class Window
 
 
   private final WindowExpression windowExpression;
+  private final String windowName;
 
   public Window(String windowName, WindowExpression windowExpression) {
     this(Optional.empty(), windowName, windowExpression);
@@ -36,13 +37,18 @@ public class Window
   }
 
   private Window(Optional<NodeLocation> location, String windowName,
-                 WindowExpression windowExpression) {
+      WindowExpression windowExpression) {
     super(location);
+    this.windowName = windowName;
     this.windowExpression = requireNonNull(windowExpression, "windowExpression is null");
   }
 
   public WindowExpression getWindowExpression() {
     return windowExpression;
+  }
+
+  public String getWindowName() {
+    return windowName;
   }
 
   @Override
