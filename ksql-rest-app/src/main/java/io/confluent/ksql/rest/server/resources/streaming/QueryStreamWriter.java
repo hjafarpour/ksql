@@ -39,6 +39,7 @@ import io.confluent.ksql.GenericRow;
 import io.confluent.ksql.KsqlEngine;
 import io.confluent.ksql.planner.plan.OutputNode;
 import io.confluent.ksql.rest.entity.StreamedRow;
+import io.confluent.ksql.serde.json.KsqlJsonSerializer;
 import io.confluent.ksql.util.KsqlException;
 import io.confluent.ksql.util.QueryMetadata;
 import io.confluent.ksql.util.QueuedQueryMetadata;
@@ -75,7 +76,6 @@ class QueryStreamWriter implements StreamingOutput {
     this.queryMetadata.setLimitHandler(new LimitHandler());
     this.queryMetadata.getKafkaStreams().setUncaughtExceptionHandler(new StreamsExceptionHandler());
     this.ksqlEngine = ksqlEngine;
-
     queryMetadata.getKafkaStreams().start();
   }
 
