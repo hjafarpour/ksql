@@ -25,6 +25,7 @@ import io.confluent.ksql.parser.tree.ComparisonExpression;
 import io.confluent.ksql.parser.tree.CreateStream;
 import io.confluent.ksql.parser.tree.CreateStreamAsSelect;
 import io.confluent.ksql.parser.tree.CreateTable;
+import io.confluent.ksql.parser.tree.DereferenceExpression;
 import io.confluent.ksql.parser.tree.DropStream;
 import io.confluent.ksql.parser.tree.DropTable;
 import io.confluent.ksql.parser.tree.InsertInto;
@@ -222,6 +223,31 @@ public class KsqlParserTest {
     SingleColumn column2 = (SingleColumn)querySpecification.getSelect().getSelectItems().get(2);
     Assert.assertTrue("testProjection fails", column2.getAlias().get().equalsIgnoreCase("KSQL_COL_2"));
     Assert.assertTrue("testProjection fails", column2.getExpression().toString().equalsIgnoreCase("'test'"));
+
+  }
+
+  @Test
+  public void shouldParseStructFieldAccessCorrectly() {
+    String simpleQuery = "SELECT iteminfo.category.name, address.street FROM orders WHERE address.state = 'CA';";
+    Statement statement = KSQL_PARSER.buildAst(simpleQuery, metaStore).get(0);
+
+
+    Assert.assertTrue("testSimpleQuery fails", statement instanceof Query);
+    Query query = (Query) statement;
+    assertThat("testSimpleQuery fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
+    QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
+    assertThat("testSimpleQuery fails", querySpecification.getSelect().getSelectItems().size(), equalTo(2));
+    SingleColumn singleColumn0 = (SingleColumn) querySpecification.getSelect().getSelectItems().get(0);
+    SingleColumn singleColumn1 = (SingleColumn) querySpecification.getSelect().getSelectItems().get(1);
+    assertThat(singleColumn0.getExpression(), instanceOf(DereferenceExpression.class));
+    assertThat(singleColumn0.getExpression().toString(), equalTo("ORDERS.ITEMINFO.CATEGORY.NAME"));
+    DereferenceExpression dereferenceExpression0 = (DereferenceExpression) singleColumn0.getExpression();
+    assertThat(dereferenceExpression0.getBase().toString(), equalTo("ORDERS.ITEMINFO.CATEGORY"));
+    assertThat(dereferenceExpression0.getFieldName(), equalTo("NAME"));
+
+    DereferenceExpression dereferenceExpression1 = (DereferenceExpression) singleColumn1.getExpression();
+    assertThat(dereferenceExpression1.getBase().toString(), equalTo("ORDERS.ADDRESS"));
+    assertThat(dereferenceExpression1.getFieldName(), equalTo("STREET"));
 
   }
 
@@ -434,7 +460,7 @@ public class KsqlParserTest {
     Assert.assertTrue("testCreateTable failed.", createStreamAsSelect.getName().toString().equalsIgnoreCase("bigorders_json"));
     Assert.assertTrue("testCreateTable failed.", createStreamAsSelect.getQuery().getQueryBody() instanceof QuerySpecification);
     QuerySpecification querySpecification = (QuerySpecification) createStreamAsSelect.getQuery().getQueryBody();
-    Assert.assertTrue("testCreateTable failed.", querySpecification.getSelect().getSelectItems().size() == 4);
+    Assert.assertTrue("testCreateTable failed.", querySpecification.getSelect().getSelectItems().size() == 8);
     Assert.assertTrue("testCreateTable failed.", querySpecification.getWhere().get().toString().equalsIgnoreCase("(ORDERS.ORDERUNITS > 5)"));
     Assert.assertTrue("testCreateTable failed.", ((AliasedRelation)querySpecification.getFrom()).getAlias().equalsIgnoreCase("ORDERS"));
   }
