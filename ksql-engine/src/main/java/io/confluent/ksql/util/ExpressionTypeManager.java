@@ -198,6 +198,11 @@ public class ExpressionTypeManager
         process(node.getArguments().get(0), expressionTypeContext);
         Schema firstArgSchema = expressionTypeContext.getSchema();
         String fieldName = ((StringLiteral) node.getArguments().get(1)).getValue();
+        if (firstArgSchema.field(fieldName) == null) {
+          throw new KsqlException(String.format("Could not find field %s in %s.",
+              fieldName,
+              node.getArguments().get(0).toString()));
+        }
         Schema returnSchema = firstArgSchema.field(fieldName).schema();
         expressionTypeContext.setSchema(returnSchema);
       } else {
