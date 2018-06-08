@@ -479,7 +479,7 @@ public class StatementRewriterTest {
     assertThat("testCreateTable failed.", createStreamAsSelect.getName().toString(), equalTo("BIGORDERS_JSON"));
     assertThat("testCreateTable failed.", createStreamAsSelect.getQuery().getQueryBody(), instanceOf(QuerySpecification.class));
     QuerySpecification querySpecification = (QuerySpecification) createStreamAsSelect.getQuery().getQueryBody();
-    assertThat("testCreateTable failed.", querySpecification.getSelect().getSelectItems().size() == 4);
+    assertThat("testCreateTable failed.", querySpecification.getSelect().getSelectItems().size() == 8);
     assertThat("testCreateTable failed.", querySpecification.getWhere().get().toString(), equalTo("(ORDERS.ORDERUNITS > 5)"));
     assertThat("testCreateTable failed.", ((AliasedRelation)querySpecification.getFrom()).getAlias(), equalTo("ORDERS"));
   }
