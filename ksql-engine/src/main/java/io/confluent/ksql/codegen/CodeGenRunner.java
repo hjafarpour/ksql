@@ -94,6 +94,13 @@ public class CodeGenRunner {
     IExpressionEvaluator ee =
         CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
 
+    ee.setDefaultImports(new String[]{
+        "org.apache.kafka.connect.data.Struct",
+        "java.util.HashMap",
+        "java.util.Map",
+        "java.util.List",
+        "java.util.ArrayList"});
+
     ee.setParameters(parameterNames, parameterTypes);
 
     Schema expressionType = expressionTypeManager.getExpressionSchema(expression);
@@ -203,13 +210,17 @@ public class CodeGenRunner {
 
     @Override
     protected Object visitSubscriptExpression(SubscriptExpression node, Object context) {
-      String arrayBaseName = node.getBase().toString();
-      Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
-      if (!schemaField.isPresent()) {
-        throw new RuntimeException(
-            "Cannot find the select field in the available fields: " + arrayBaseName);
+      if (node.getBase() instanceof FunctionCall) {
+        process(node.getBase(), context);
+      } else {
+        String arrayBaseName = node.getBase().toString();
+        Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
+        if (!schemaField.isPresent()) {
+          throw new RuntimeException(
+              "Cannot find the select field in the available fields: " + arrayBaseName);
+        }
+        addParameter(schemaField);
       }
-      addParameter(schemaField);
       process(node.getIndex(), context);
       return null;
     }

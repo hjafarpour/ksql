@@ -19,6 +19,7 @@ package io.confluent.ksql.util;
 import io.confluent.ksql.function.FunctionRegistry;
 import io.confluent.ksql.function.KsqlAggregateFunction;
 import io.confluent.ksql.function.UdfFactory;
+import io.confluent.ksql.function.udf.structfieldextractor.FetchFieldFromStruct;
 import io.confluent.ksql.parser.tree.ArithmeticBinaryExpression;
 import io.confluent.ksql.parser.tree.BooleanLiteral;
 import io.confluent.ksql.parser.tree.Cast;
@@ -193,14 +194,22 @@ public class ExpressionTypeManager
 
     final UdfFactory udfFactory = functionRegistry.getUdfFactory(node.getName().getSuffix());
     if (udfFactory != null) {
-      List<Schema.Type> argTypes = new ArrayList<>();
-      for (final Expression expression : node.getArguments()) {
-        process(expression, expressionTypeContext);
-        argTypes.add(expressionTypeContext.getSchema().type());
+      if (node.getName().getSuffix().equalsIgnoreCase(FetchFieldFromStruct.functionName)) {
+        process(node.getArguments().get(0), expressionTypeContext);
+        Schema firstArgSchema = expressionTypeContext.getSchema();
+        String fieldName = ((StringLiteral) node.getArguments().get(1)).getValue();
+        Schema returnSchema = firstArgSchema.field(fieldName).schema();
+        expressionTypeContext.setSchema(returnSchema);
+      } else {
+        List<Schema.Type> argTypes = new ArrayList<>();
+        for (final Expression expression : node.getArguments()) {
+          process(expression, expressionTypeContext);
+          argTypes.add(expressionTypeContext.getSchema().type());
+        }
+        final Schema returnType = udfFactory.getFunction(argTypes)
+            .getReturnType();
+        expressionTypeContext.setSchema(returnType);
       }
-      final Schema returnType = udfFactory.getFunction(argTypes)
-          .getReturnType();
-      expressionTypeContext.setSchema(returnType);
     } else if (functionRegistry.isAggregate(node.getName().getSuffix())) {
       KsqlAggregateFunction ksqlAggregateFunction =
           functionRegistry.getAggregate(

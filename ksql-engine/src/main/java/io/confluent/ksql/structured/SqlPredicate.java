@@ -79,6 +79,13 @@ public class SqlPredicate {
     try {
       ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
 
+      ee.setDefaultImports(new String[]{
+          "org.apache.kafka.connect.data.Struct",
+          "java.util.HashMap",
+          "java.util.Map",
+          "java.util.List",
+          "java.util.ArrayList"});
+
       ee.setParameters(parameterNames, parameterTypes);
 
       ee.setExpressionType(boolean.class);
