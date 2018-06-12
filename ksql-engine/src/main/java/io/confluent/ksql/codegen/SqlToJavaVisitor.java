@@ -243,13 +243,13 @@ public class SqlToJavaVisitor {
         functionReturnSchema = expressionTypeManager.getExpressionSchema(node);
       } else {
         final UdfFactory udfFactory = functionRegistry.getUdfFactory(functionName);
-        final List<Schema.Type> argumentTypes = new ArrayList<>();
-        node.getArguments().forEach(arg -> argumentTypes.add(
-            expressionTypeManager.getExpressionType(arg)
-        ));
+        final List<Schema.Type> argumentTypes = node.getArguments().stream()
+            .map(expressionTypeManager::getExpressionType)
+            .collect(Collectors.toList());
+
         functionReturnSchema = udfFactory.getFunction(argumentTypes).getReturnType();
       }
-      String javaReturnType = SchemaUtil.getJavaType(functionReturnSchema).getSimpleName();
+      final String javaReturnType = SchemaUtil.getJavaType(functionReturnSchema).getSimpleName();
       final String arguments = node.getArguments().stream()
           .map(arg -> process(arg, unmangleNames).getLeft())
           .collect(Collectors.joining(", "));
@@ -521,12 +521,17 @@ public class SqlToJavaVisitor {
         SubscriptExpression node,
         Boolean unmangleNames
     ) {
-      String arrayBaseName = node.getBase().toString();
-      Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
-      if (!schemaField.isPresent()) {
-        throw new KsqlException("Field not found: " + arrayBaseName);
-      }
-      final Schema internalSchema = schemaField.get().schema();
+      ExpressionTypeManager expressionTypeManager =
+          new ExpressionTypeManager(schema, functionRegistry);
+
+//      String arrayBaseName = node.getBase().toString();
+//      Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
+//      if (!schemaField.isPresent()) {
+//        throw new KsqlException("Field not found: " + arrayBaseName);
+//      }
+//      final Schema internalSchema = schemaField.get().schema();
+      final Schema internalSchema = expressionTypeManager.getExpressionSchema(node.getBase());
+
       final String internalSchemaJavaType =
           SchemaUtil.getJavaType(internalSchema).getCanonicalName();
       switch (internalSchema.type()) {

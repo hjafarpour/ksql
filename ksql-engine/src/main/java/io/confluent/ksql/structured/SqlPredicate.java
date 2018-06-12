@@ -46,13 +46,13 @@ public class SqlPredicate {
   private boolean isWindowedKey;
   private final FunctionRegistry functionRegistry;
 
-  private GenericRowValueTypeEnforcer genericRowValueTypeEnforcer;
+  private final GenericRowValueTypeEnforcer genericRowValueTypeEnforcer;
   private static final Logger log = LoggerFactory.getLogger(SqlPredicate.class);
 
   SqlPredicate(
       final Expression filterExpression,
       final Schema schema,
-      boolean isWindowedKey,
+      final boolean isWindowedKey,
       final FunctionRegistry functionRegistry
   ) {
     this.filterExpression = filterExpression;
@@ -79,18 +79,13 @@ public class SqlPredicate {
     try {
       ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
 
-      ee.setDefaultImports(new String[]{
-          "org.apache.kafka.connect.data.Struct",
-          "java.util.HashMap",
-          "java.util.Map",
-          "java.util.List",
-          "java.util.ArrayList"});
+      ee.setDefaultImports(CodeGenRunner.CODEGEN_IMPORTS);
 
       ee.setParameters(parameterNames, parameterTypes);
 
       ee.setExpressionType(boolean.class);
 
-      String expressionStr = new SqlToJavaVisitor(
+      final String expressionStr = new SqlToJavaVisitor(
           schema,
           functionRegistry
       ).process(filterExpression);
@@ -123,8 +118,8 @@ public class SqlPredicate {
 
     return (key, row) -> {
       try {
-        Kudf[] kudfs = expressionEvaluator.getUdfs();
-        Object[] values = new Object[columnIndexes.length];
+        final Kudf[] kudfs = expressionEvaluator.getUdfs();
+        final Object[] values = new Object[columnIndexes.length];
         for (int i = 0; i < values.length; i++) {
           if (columnIndexes[i] < 0) {
             values[i] = kudfs[i];
@@ -161,8 +156,8 @@ public class SqlPredicate {
     final ExpressionMetadata expressionEvaluator = createExpressionMetadata();
     return (Predicate<Windowed<String>, GenericRow>) (key, row) -> {
       try {
-        Kudf[] kudfs = expressionEvaluator.getUdfs();
-        Object[] values = new Object[columnIndexes.length];
+        final Kudf[] kudfs = expressionEvaluator.getUdfs();
+        final Object[] values = new Object[columnIndexes.length];
         for (int i = 0; i < values.length; i++) {
           if (columnIndexes[i] < 0) {
             values[i] = kudfs[i];

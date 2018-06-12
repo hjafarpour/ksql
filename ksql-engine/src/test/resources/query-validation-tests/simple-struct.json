@@ -5,7 +5,8 @@
     "for most tests as we can simulate the outputs from previous stages into the final stage. If we",
     "take a modular approach to testing we can still verify that it all works correctly, i.e, if we",
     "verify the output of a select or aggregate is correct, we can use simulated output to feed into",
-    "a join or another aggregate."
+    "a join or another aggregate.",
+    "This test run queries on a stream with super nested schema. It will test different struct types and how queries can access nested fields in structs."
   ],
   "tests": [
     {

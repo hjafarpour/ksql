@@ -229,22 +229,22 @@ public class KsqlParserTest {
 
   @Test
   public void shouldParseStructFieldAccessCorrectly() {
-    String simpleQuery = "SELECT iteminfo.category.name, address.street FROM orders WHERE address.state = 'CA';";
-    Statement statement = KSQL_PARSER.buildAst(simpleQuery, metaStore).get(0);
+    final String simpleQuery = "SELECT iteminfo.category.name, address.street FROM orders WHERE address.state = 'CA';";
+    final Statement statement = KSQL_PARSER.buildAst(simpleQuery, metaStore).get(0);
 
 
     Assert.assertTrue("testSimpleQuery fails", statement instanceof Query);
-    Query query = (Query) statement;
+    final Query query = (Query) statement;
     assertThat("testSimpleQuery fails", query.getQueryBody(), instanceOf(QuerySpecification.class));
-    QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
+    final QuerySpecification querySpecification = (QuerySpecification)query.getQueryBody();
     assertThat("testSimpleQuery fails", querySpecification.getSelect().getSelectItems().size(), equalTo(2));
-    SingleColumn singleColumn0 = (SingleColumn) querySpecification.getSelect().getSelectItems().get(0);
-    SingleColumn singleColumn1 = (SingleColumn) querySpecification.getSelect().getSelectItems().get(1);
+    final SingleColumn singleColumn0 = (SingleColumn) querySpecification.getSelect().getSelectItems().get(0);
+    final SingleColumn singleColumn1 = (SingleColumn) querySpecification.getSelect().getSelectItems().get(1);
     assertThat(singleColumn0.getExpression(), instanceOf(FunctionCall.class));
-    FunctionCall functionCall0 = (FunctionCall) singleColumn0.getExpression();
+    final FunctionCall functionCall0 = (FunctionCall) singleColumn0.getExpression();
     assertThat(functionCall0.toString(), equalTo("FETCH_FIELD_FROM_STRUCT(FETCH_FIELD_FROM_STRUCT(ORDERS.ITEMINFO, 'CATEGORY'), 'NAME')"));
 
-    FunctionCall functionCall1 = (FunctionCall) singleColumn1.getExpression();
+    final FunctionCall functionCall1 = (FunctionCall) singleColumn1.getExpression();
     assertThat(functionCall1.toString(), equalTo("FETCH_FIELD_FROM_STRUCT(ORDERS.ADDRESS, 'STREET')"));
 
   }

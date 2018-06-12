@@ -21,7 +21,6 @@ import com.google.common.collect.Lists;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import org.apache.kafka.connect.data.Struct;
@@ -132,16 +131,18 @@ class QueryStreamWriter implements StreamingOutput {
   }
 
   private void write(OutputStream output, GenericRow row) throws IOException {
-    objectMapper.writeValue(output, StreamedRow.row(updateRow(row)));
+    objectMapper.writeValue(output, StreamedRow.row(getNewUpdatedRow(row)));
     output.write("\n".getBytes(StandardCharsets.UTF_8));
     output.flush();
   }
 
-  private GenericRow updateRow(GenericRow genericRow) {
-    List<Object> columns = new ArrayList<>();
-    genericRow.getColumns()
-        .forEach(col -> columns.add(getValidObject(col)));
-    return new GenericRow(columns);
+  private GenericRow getNewUpdatedRow(GenericRow genericRow) {
+
+    return new GenericRow(
+        genericRow.getColumns().stream()
+        .map(this::getValidObject)
+        .collect(Collectors.toList())
+    );
   }
 
   private Object getValidObject(Object object) {

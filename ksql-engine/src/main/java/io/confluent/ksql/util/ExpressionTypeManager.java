@@ -82,9 +82,9 @@ public class ExpressionTypeManager
   protected Expression visitArithmeticBinary(final ArithmeticBinaryExpression node,
                                              final ExpressionTypeContext expressionTypeContext) {
     process(node.getLeft(), expressionTypeContext);
-    Schema leftType = expressionTypeContext.getSchema();
+    final Schema leftType = expressionTypeContext.getSchema();
     process(node.getRight(), expressionTypeContext);
-    Schema rightType = expressionTypeContext.getSchema();
+    final Schema rightType = expressionTypeContext.getSchema();
     expressionTypeContext.setSchema(resolveArithmeticType(leftType, rightType));
     return null;
   }
@@ -92,7 +92,7 @@ public class ExpressionTypeManager
   protected Expression visitCast(final Cast node,
                                  final ExpressionTypeContext expressionTypeContext) {
 
-    Schema castType = SchemaUtil.getTypeSchema(node.getType());
+    final Schema castType = SchemaUtil.getTypeSchema(node.getType());
     expressionTypeContext.setSchema(castType);
     return null;
   }
@@ -107,7 +107,8 @@ public class ExpressionTypeManager
   @Override
   protected Expression visitQualifiedNameReference(
       final QualifiedNameReference node, final ExpressionTypeContext expressionTypeContext) {
-    Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, node.getName().getSuffix());
+    final Optional<Field> schemaField =
+        SchemaUtil.getFieldByName(schema, node.getName().getSuffix());
     if (!schemaField.isPresent()) {
       throw new KsqlException(String.format("Invalid Expression %s.", node.toString()));
     }
@@ -119,7 +120,7 @@ public class ExpressionTypeManager
   @Override
   protected Expression visitDereferenceExpression(
       final DereferenceExpression node, final ExpressionTypeContext expressionTypeContext) {
-    Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, node.toString());
+    final Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, node.toString());
     if (!schemaField.isPresent()) {
       throw new KsqlException(String.format("Invalid Expression %s.", node.toString()));
     }
@@ -179,13 +180,9 @@ public class ExpressionTypeManager
 
   protected Expression visitSubscriptExpression(
       final SubscriptExpression node, final ExpressionTypeContext expressionTypeContext) {
-    String arrayBaseName = node.getBase().toString();
-    Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
-    if (!schemaField.isPresent()) {
-      throw new KsqlException(String.format("Invalid Expression %s.", node.toString()));
-    }
-    final Schema valueSchema = schemaField.get().schema().valueSchema();
-    expressionTypeContext.setSchema(valueSchema);
+    process(node.getBase(), expressionTypeContext);
+    Schema arrayMapSchema = expressionTypeContext.getSchema();
+    expressionTypeContext.setSchema(arrayMapSchema.valueSchema());
     return null;
   }
 
@@ -196,17 +193,17 @@ public class ExpressionTypeManager
     if (udfFactory != null) {
       if (node.getName().getSuffix().equalsIgnoreCase(FetchFieldFromStruct.functionName)) {
         process(node.getArguments().get(0), expressionTypeContext);
-        Schema firstArgSchema = expressionTypeContext.getSchema();
-        String fieldName = ((StringLiteral) node.getArguments().get(1)).getValue();
+        final Schema firstArgSchema = expressionTypeContext.getSchema();
+        final String fieldName = ((StringLiteral) node.getArguments().get(1)).getValue();
         if (firstArgSchema.field(fieldName) == null) {
           throw new KsqlException(String.format("Could not find field %s in %s.",
               fieldName,
               node.getArguments().get(0).toString()));
         }
-        Schema returnSchema = firstArgSchema.field(fieldName).schema();
+        final Schema returnSchema = firstArgSchema.field(fieldName).schema();
         expressionTypeContext.setSchema(returnSchema);
       } else {
-        List<Schema.Type> argTypes = new ArrayList<>();
+        final List<Schema.Type> argTypes = new ArrayList<>();
         for (final Expression expression : node.getArguments()) {
           process(expression, expressionTypeContext);
           argTypes.add(expressionTypeContext.getSchema().type());
@@ -216,7 +213,7 @@ public class ExpressionTypeManager
         expressionTypeContext.setSchema(returnType);
       }
     } else if (functionRegistry.isAggregate(node.getName().getSuffix())) {
-      KsqlAggregateFunction ksqlAggregateFunction =
+      final KsqlAggregateFunction ksqlAggregateFunction =
           functionRegistry.getAggregate(
               node.getName().getSuffix(), getExpressionSchema(node.getArguments().get(0)));
       expressionTypeContext.setSchema(ksqlAggregateFunction.getReturnType());
