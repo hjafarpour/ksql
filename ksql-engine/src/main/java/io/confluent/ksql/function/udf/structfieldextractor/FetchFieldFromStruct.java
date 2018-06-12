@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Confluent Inc.
+ * Copyright 2018 Confluent Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import io.confluent.ksql.function.udf.Kudf;
 
 public class FetchFieldFromStruct implements Kudf {
 
-  public static final String functionName = "FETCH_FIELD_FROM_STRUCT";
+  public static final String FUNCTION_NAME = "FETCH_FIELD_FROM_STRUCT";
 
   @Override
-  public Object evaluate(Object... args) {
+  public Object evaluate(final Object... args) {
     if (args.length != 2) {
       throw new KsqlFunctionException("Function FetchFieldFromStruct should have two arguments.");
     }
@@ -34,7 +34,7 @@ public class FetchFieldFromStruct implements Kudf {
       throw new KsqlFunctionException("Invalid data type. Function argument should be Struct type"
           + ".");
     }
-    Struct struct = (Struct) args[0];
+    final Struct struct = (Struct) args[0];
     return struct.get((String) args[1]);
   }
 }

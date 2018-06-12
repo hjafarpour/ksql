@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 Confluent Inc.
+ * Copyright 2018 Confluent Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,9 @@
 
 package io.confluent.ksql.parser.rewrite;
 
-import org.apache.kafka.connect.data.Field;
+import com.google.common.collect.ImmutableList;
+import java.util.Objects;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import io.confluent.ksql.metastore.MetaStore;
-import io.confluent.ksql.metastore.StructuredDataSource;
 import io.confluent.ksql.parser.tree.DereferenceExpression;
 import io.confluent.ksql.parser.tree.Expression;
 import io.confluent.ksql.parser.tree.FunctionCall;
@@ -35,23 +31,17 @@ import io.confluent.ksql.util.DataSourceExtractor;
 
 public class StatementRewriteForStruct {
 
-  private Statement statement;
-  private MetaStore metaStore;
-  private DataSourceExtractor dataSourceExtractor;
+  private final Statement statement;
 
   public StatementRewriteForStruct(
       final Statement statement,
-      final MetaStore metaStore,
       final DataSourceExtractor dataSourceExtractor
   ) {
-    this.statement = statement;
-    this.metaStore = metaStore;
-    this.dataSourceExtractor = dataSourceExtractor;
+    this.statement = Objects.requireNonNull(statement, "statement");
   }
 
   public Statement rewriteForStruct() {
-    RewriteWithStructFieldExtractors statementRewriter = new RewriteWithStructFieldExtractors();
-    return (Statement) statementRewriter.process(statement, null);
+    return (Statement) new RewriteWithStructFieldExtractors().process(statement, null);
   }
 
 
@@ -70,38 +60,41 @@ public class StatementRewriteForStruct {
         final Object context
     ) {
       if (dereferenceExpression.getBase() instanceof QualifiedNameReference) {
-        String sourceName = dereferenceExpression.getBase().toString();
-        if (dataSourceExtractor.getAliasToNameMap().containsKey(sourceName)) {
-          sourceName = dataSourceExtractor.getAliasToNameMap().get(sourceName);
-        }
-        StructuredDataSource structuredDataSource = metaStore.getSource(sourceName);
-        Field field = structuredDataSource.getSchema().field(
-            dereferenceExpression.getFieldName().toUpperCase()
-        );
-        DereferenceExpression newDereferenceExpression;
-        if (dereferenceExpression.getLocation().isPresent()) {
-          newDereferenceExpression = new DereferenceExpression(
-              dereferenceExpression.getLocation().get(),
-              (Expression) process(dereferenceExpression.getBase(), context),
-              dereferenceExpression.getFieldName()
-          );
-        } else {
-          newDereferenceExpression = new DereferenceExpression(
-              (Expression) process(dereferenceExpression.getBase(), context),
-              dereferenceExpression.getFieldName()
-          );
-        }
-
-        return newDereferenceExpression;
+        return getNewDereferenceExpression(dereferenceExpression, context);
       }
-      List<Expression> argList = new ArrayList<>();
-      Expression createFunctionResult = createFetchFunctionNodeIfNeeded(
+      return getNewFunctionCall(dereferenceExpression, context);
+    }
+
+    private FunctionCall getNewFunctionCall(
+        final DereferenceExpression dereferenceExpression,
+        final Object context
+    ) {
+      final Expression createFunctionResult = createFetchFunctionNodeIfNeeded(
           (DereferenceExpression) dereferenceExpression.getBase(), context);
 
-      argList.add(createFunctionResult);
-      String fieldName = dereferenceExpression.getFieldName();
-      argList.add(new StringLiteral(fieldName));
-      return new FunctionCall(QualifiedName.of("FETCH_FIELD_FROM_STRUCT"), argList);
+      final String fieldName = dereferenceExpression.getFieldName();
+      return new FunctionCall(
+          QualifiedName.of("FETCH_FIELD_FROM_STRUCT"),
+          ImmutableList.of(createFunctionResult, new StringLiteral(fieldName)));
+    }
+
+    private DereferenceExpression getNewDereferenceExpression(
+        final DereferenceExpression dereferenceExpression,
+        final Object context
+    ) {
+      return dereferenceExpression.getLocation()
+          .map(location ->
+              new DereferenceExpression(
+                  dereferenceExpression.getLocation().get(),
+                  (Expression) process(dereferenceExpression.getBase(), context),
+                  dereferenceExpression.getFieldName())
+          )
+          .orElse(
+              new DereferenceExpression(
+                  (Expression) process(dereferenceExpression.getBase(), context),
+                  dereferenceExpression.getFieldName()
+              )
+          );
     }
   }
 

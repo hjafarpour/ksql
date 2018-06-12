@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 Confluent Inc.
+ * Copyright 2018 Confluent Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ public class StatementRewriteForStructTest {
 
   @Before
   public void init() {
-
     metaStore = MetaStoreFixture.getNewMetaStore(new TestFunctionRegistry());
   }
 
@@ -57,7 +56,6 @@ public class StatementRewriteForStructTest {
 
     StatementRewriteForStruct statementRewriteForStruct = new StatementRewriteForStruct(
         statement,
-        metaStore,
         dataSourceExtractor
     );
     Statement rewrittenStatement = statementRewriteForStruct.rewriteForStruct();
