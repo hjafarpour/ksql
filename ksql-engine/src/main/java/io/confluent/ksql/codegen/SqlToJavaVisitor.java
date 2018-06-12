@@ -523,13 +523,6 @@ public class SqlToJavaVisitor {
     ) {
       ExpressionTypeManager expressionTypeManager =
           new ExpressionTypeManager(schema, functionRegistry);
-
-//      String arrayBaseName = node.getBase().toString();
-//      Optional<Field> schemaField = SchemaUtil.getFieldByName(schema, arrayBaseName);
-//      if (!schemaField.isPresent()) {
-//        throw new KsqlException("Field not found: " + arrayBaseName);
-//      }
-//      final Schema internalSchema = schemaField.get().schema();
       final Schema internalSchema = expressionTypeManager.getExpressionSchema(node.getBase());
 
       final String internalSchemaJavaType =
