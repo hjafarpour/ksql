@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.stream.Collectors;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.streams.KeyValue;
@@ -150,6 +151,23 @@ class QueryStreamWriter implements StreamingOutput {
     if (object instanceof Struct) {
       Struct struct = (Struct) object;
       return new String(jsonConverter.fromConnectData("", struct.schema(), struct));
+    } else if (object instanceof List) {
+      List<Object> rowList = (List<Object>) object;
+      StringBuilder stringBuilder = new StringBuilder("[");
+      stringBuilder.append(
+          rowList.stream()
+          .map(listItem -> getValidObject(listItem).toString())
+          .collect(Collectors.joining(", "))
+      );
+      return stringBuilder.append("]").toString();
+    } else if (object instanceof Map) {
+      Map<String, Object> rowMap = (Map<String, Object>) object;
+      StringBuilder stringBuilder = new StringBuilder("{");
+      stringBuilder.append(rowMap.entrySet().stream()
+          .map(mapEntry -> "\"" + mapEntry.getKey() + "\":"
+              + "{" + getValidObject(mapEntry.getValue()) + "}")
+          .collect(Collectors.joining(", ")));
+      return stringBuilder.append("}").toString();
     } else {
       return object;
     }
