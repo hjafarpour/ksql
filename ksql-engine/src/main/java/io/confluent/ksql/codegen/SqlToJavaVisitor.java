@@ -18,6 +18,7 @@ package io.confluent.ksql.codegen;
 
 import com.google.common.base.Joiner;
 
+import io.confluent.ksql.function.udf.structfieldextractor.FetchFieldFromStruct;
 import io.confluent.ksql.util.ExpressionTypeManager;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
@@ -232,29 +233,30 @@ public class SqlToJavaVisitor {
 
     @Override
     protected Pair<String, Schema> visitFunctionCall(FunctionCall node, Boolean unmangleNames) {
+      final StringBuilder builder = new StringBuilder("(");
       final String functionName = node.getName().getSuffix();
-      final UdfFactory udfFactory = functionRegistry.getUdfFactory(functionName);
-      final List<Schema.Type> argumentTypes = new ArrayList<>();
-      final ExpressionTypeManager expressionTypeManager
-          = new ExpressionTypeManager(schema, functionRegistry);
-
+      final ExpressionTypeManager expressionTypeManager =
+          new ExpressionTypeManager(schema, functionRegistry);
       String instanceName = functionName + "_" + functionCounter++;
-
+      final Schema functionReturnSchema;
+      if (functionName.equalsIgnoreCase(FetchFieldFromStruct.functionName)) {
+        functionReturnSchema = expressionTypeManager.getExpressionSchema(node);
+      } else {
+        final UdfFactory udfFactory = functionRegistry.getUdfFactory(functionName);
+        final List<Schema.Type> argumentTypes = new ArrayList<>();
+        node.getArguments().forEach(arg -> argumentTypes.add(
+            expressionTypeManager.getExpressionType(arg)
+        ));
+        functionReturnSchema = udfFactory.getFunction(argumentTypes).getReturnType();
+      }
+      String javaReturnType = SchemaUtil.getJavaType(functionReturnSchema).getSimpleName();
       final String arguments = node.getArguments().stream()
           .map(arg -> process(arg, unmangleNames).getLeft())
           .collect(Collectors.joining(", "));
-      node.getArguments().forEach(arg -> argumentTypes.add(
-          expressionTypeManager.getExpressionType(arg)
-      ));
-      final Schema returnType = udfFactory.getFunction(argumentTypes).getReturnType();
-      String javaReturnType = SchemaUtil.getJavaType(returnType)
-          .getSimpleName();
-
-      final StringBuilder builder = new StringBuilder("(");
       builder.append("(").append(javaReturnType).append(") ")
           .append(instanceName).append(".evaluate(")
           .append(arguments).append("))");
-      return new Pair<>(builder.toString(), returnType);
+      return new Pair<>(builder.toString(), functionReturnSchema);
     }
 
     @Override

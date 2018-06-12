@@ -112,8 +112,8 @@ public class MetaStoreFixture {
         .field("ITEMID", Schema.OPTIONAL_STRING_SCHEMA)
         .field("ITEMINFO", itemInfoSchema)
         .field("ORDERUNITS", Schema.INT32_SCHEMA)
-        .field("ARRAYCOL",schemaBuilder.array(Schema.FLOAT64_SCHEMA).optional().build())
-        .field("MAPCOL", schemaBuilder.map(Schema.STRING_SCHEMA, Schema.FLOAT64_SCHEMA).optional().build())
+        .field("ARRAYCOL",SchemaBuilder.array(Schema.FLOAT64_SCHEMA).optional().build())
+        .field("MAPCOL", SchemaBuilder.map(Schema.STRING_SCHEMA, Schema.FLOAT64_SCHEMA).optional().build())
         .field("ADDRESS", addressSchema)
         .build();
 

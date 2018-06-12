@@ -39,6 +39,7 @@ import io.confluent.ksql.function.udf.string.LenKudf;
 import io.confluent.ksql.function.udf.string.SubstringKudf;
 import io.confluent.ksql.function.udf.string.TrimKudf;
 import io.confluent.ksql.function.udf.string.UCaseKudf;
+import io.confluent.ksql.function.udf.structfieldextractor.FetchFieldFromStruct;
 import io.confluent.ksql.util.KsqlException;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
@@ -71,7 +72,9 @@ public class InternalFunctionRegistry implements FunctionRegistry {
     addDateTimeFunctions();
     addGeoFunctions();
     addJsonFunctions();
+    addStructFieldFetcher();
     addUdafFunctions();
+
   }
 
   public UdfFactory getUdfFactory(final String functionName) {
@@ -281,6 +284,23 @@ public class InternalFunctionRegistry implements FunctionRegistry {
             Schema.OPTIONAL_FLOAT64_SCHEMA),
         "ARRAYCONTAINS", ArrayContainsKudf.class));
   }
+
+
+  /***************************************
+   * Struct Field Extractor functions      *
+   ****************************************/
+
+  private void addStructFieldFetcher() {
+    KsqlFunction fetchFieldFromStruct = new KsqlFunction(
+        SchemaBuilder.struct().optional().build(),
+        Arrays.asList(
+            SchemaBuilder.struct().optional().build(),
+            Schema.STRING_SCHEMA),
+        FetchFieldFromStruct.functionName,
+        FetchFieldFromStruct.class);
+    addFunction(fetchFieldFromStruct);
+  }
+
 
   private void addUdafFunctions() {
     addAggregateFunctionFactory(new CountAggFunctionFactory());

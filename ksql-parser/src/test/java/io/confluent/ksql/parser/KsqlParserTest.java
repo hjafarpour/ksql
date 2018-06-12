@@ -28,6 +28,7 @@ import io.confluent.ksql.parser.tree.CreateTable;
 import io.confluent.ksql.parser.tree.DereferenceExpression;
 import io.confluent.ksql.parser.tree.DropStream;
 import io.confluent.ksql.parser.tree.DropTable;
+import io.confluent.ksql.parser.tree.FunctionCall;
 import io.confluent.ksql.parser.tree.InsertInto;
 import io.confluent.ksql.parser.tree.ListProperties;
 import io.confluent.ksql.parser.tree.ListQueries;
@@ -239,15 +240,12 @@ public class KsqlParserTest {
     assertThat("testSimpleQuery fails", querySpecification.getSelect().getSelectItems().size(), equalTo(2));
     SingleColumn singleColumn0 = (SingleColumn) querySpecification.getSelect().getSelectItems().get(0);
     SingleColumn singleColumn1 = (SingleColumn) querySpecification.getSelect().getSelectItems().get(1);
-    assertThat(singleColumn0.getExpression(), instanceOf(DereferenceExpression.class));
-    assertThat(singleColumn0.getExpression().toString(), equalTo("ORDERS.ITEMINFO.CATEGORY.NAME"));
-    DereferenceExpression dereferenceExpression0 = (DereferenceExpression) singleColumn0.getExpression();
-    assertThat(dereferenceExpression0.getBase().toString(), equalTo("ORDERS.ITEMINFO.CATEGORY"));
-    assertThat(dereferenceExpression0.getFieldName(), equalTo("NAME"));
+    assertThat(singleColumn0.getExpression(), instanceOf(FunctionCall.class));
+    FunctionCall functionCall0 = (FunctionCall) singleColumn0.getExpression();
+    assertThat(functionCall0.toString(), equalTo("FETCH_FIELD_FROM_STRUCT(FETCH_FIELD_FROM_STRUCT(ORDERS.ITEMINFO, 'CATEGORY'), 'NAME')"));
 
-    DereferenceExpression dereferenceExpression1 = (DereferenceExpression) singleColumn1.getExpression();
-    assertThat(dereferenceExpression1.getBase().toString(), equalTo("ORDERS.ADDRESS"));
-    assertThat(dereferenceExpression1.getFieldName(), equalTo("STREET"));
+    FunctionCall functionCall1 = (FunctionCall) singleColumn1.getExpression();
+    assertThat(functionCall1.toString(), equalTo("FETCH_FIELD_FROM_STRUCT(ORDERS.ADDRESS, 'STREET')"));
 
   }
 

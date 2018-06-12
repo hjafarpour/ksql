@@ -27,6 +27,9 @@ public class FetchFieldFromStruct implements Kudf {
 
   @Override
   public Object evaluate(Object... args) {
+    if (args[0] == null) {
+      return null;
+    }
     if (args.length != 2) {
       throw new KsqlFunctionException("Function FetchFieldFromStruct should have two arguments.");
     }
@@ -37,4 +40,5 @@ public class FetchFieldFromStruct implements Kudf {
     Struct struct = (Struct) args[0];
     return struct.get((String) args[1]);
   }
+
 }
