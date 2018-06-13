@@ -16,6 +16,8 @@
 
 package io.confluent.ksql.parser.rewrite;
 
+import com.google.common.collect.ImmutableList;
+import io.confluent.ksql.parser.tree.SubscriptExpression;
 import org.apache.kafka.connect.data.Field;
 
 import java.util.ArrayList;
@@ -93,6 +95,13 @@ public class StatementRewriteForStruct {
         }
 
         return newDereferenceExpression;
+      } else if (dereferenceExpression.getBase() instanceof SubscriptExpression) {
+        return new FunctionCall(
+            QualifiedName.of("FETCH_FIELD_FROM_STRUCT"),
+            ImmutableList.of(
+                dereferenceExpression.getBase(),
+                new StringLiteral(dereferenceExpression.getFieldName())
+            ));
       }
       List<Expression> argList = new ArrayList<>();
       Expression createFunctionResult = createFetchFunctionNodeIfNeeded(
