@@ -21,9 +21,9 @@ import com.google.common.collect.Lists;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.confluent.ksql.rest.util.StreamedRowUtil;
+import io.confluent.ksql.rest.util.connect.StructSerializationModule;
 import java.util.Collections;
-import java.util.stream.Collectors;
-import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.streams.KeyValue;
 import org.slf4j.Logger;
@@ -58,19 +58,16 @@ class QueryStreamWriter implements StreamingOutput {
   private volatile Exception streamsException;
   private volatile boolean limitReached = false;
 
-  private final JsonConverter jsonConverter;
-
   QueryStreamWriter(
       KsqlEngine ksqlEngine,
       long disconnectCheckInterval,
       String queryString,
       Map<String, Object> overriddenProperties
   ) throws Exception {
-    jsonConverter = new JsonConverter();
-    jsonConverter.configure(Collections.singletonMap("schemas.enable", false), false);
     QueryMetadata queryMetadata =
         ksqlEngine.buildMultipleQueries(queryString, overriddenProperties).get(0);
     this.objectMapper = new ObjectMapper().disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+    this.objectMapper.registerModule(new StructSerializationModule());
     if (!(queryMetadata instanceof QueuedQueryMetadata)) {
       throw new Exception(String.format(
           "Unexpected metadata type: expected QueuedQueryMetadata, found %s instead",
@@ -83,7 +80,6 @@ class QueryStreamWriter implements StreamingOutput {
     this.queryMetadata.setLimitHandler(new LimitHandler());
     this.queryMetadata.getKafkaStreams().setUncaughtExceptionHandler(new StreamsExceptionHandler());
     this.ksqlEngine = ksqlEngine;
-
     queryMetadata.getKafkaStreams().start();
   }
 
@@ -131,47 +127,10 @@ class QueryStreamWriter implements StreamingOutput {
   }
 
   private void write(OutputStream output, GenericRow row) throws IOException {
-    objectMapper.writeValue(output, StreamedRow.row(getNewUpdatedRow(row)));
+    objectMapper
+        .writeValue(output, StreamedRow.row(row));
     output.write("\n".getBytes(StandardCharsets.UTF_8));
     output.flush();
-  }
-
-  private GenericRow getNewUpdatedRow(GenericRow genericRow) {
-
-    return new GenericRow(
-        genericRow.getColumns().stream()
-        .map(this::getValidObject)
-        .collect(Collectors.toList())
-    );
-  }
-
-  private Object getValidObject(Object object) {
-    if (object == null) {
-      return null;
-    }
-    if (object instanceof Struct) {
-      Struct struct = (Struct) object;
-      return new String(jsonConverter.fromConnectData("", struct.schema(), struct));
-    } else if (object instanceof List) {
-      List<Object> rowList = (List<Object>) object;
-      StringBuilder stringBuilder = new StringBuilder("[");
-      stringBuilder.append(
-          rowList.stream()
-          .map(listItem -> getValidObject(listItem).toString())
-          .collect(Collectors.joining(", "))
-      );
-      return stringBuilder.append("]").toString();
-    } else if (object instanceof Map) {
-      Map<String, Object> rowMap = (Map<String, Object>) object;
-      StringBuilder stringBuilder = new StringBuilder("{");
-      stringBuilder.append(rowMap.entrySet().stream()
-          .map(mapEntry -> "\"" + mapEntry.getKey() + "\":"
-              + "{" + getValidObject(mapEntry.getValue()) + "}")
-          .collect(Collectors.joining(", ")));
-      return stringBuilder.append("}").toString();
-    } else {
-      return object;
-    }
   }
 
   private void outputException(final OutputStream out, final Throwable exception) {
