@@ -20,11 +20,7 @@ import com.google.common.collect.Lists;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.confluent.ksql.rest.util.StreamedRowUtil;
-import io.confluent.ksql.rest.util.connect.StructSerializationModule;
-import java.util.Collections;
-import org.apache.kafka.connect.json.JsonConverter;
+import io.confluent.ksql.rest.util.StructSerializationModule;
 import org.apache.kafka.streams.KeyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

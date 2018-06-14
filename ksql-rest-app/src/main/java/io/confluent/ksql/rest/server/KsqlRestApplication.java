@@ -25,7 +25,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 
-import io.confluent.ksql.rest.util.connect.StructSerializationModule;
+import io.confluent.ksql.rest.util.StructSerializationModule;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;

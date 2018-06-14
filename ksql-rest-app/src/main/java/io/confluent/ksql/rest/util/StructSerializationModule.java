@@ -17,34 +17,42 @@
 package io.confluent.ksql.rest.util;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.io.IOException;
-import org.apache.kafka.connect.data.Field;
-import org.apache.kafka.connect.data.Schema.Type;
+import java.util.Collections;
 import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.json.JsonConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class StructSerializationModule extends StdSerializer<Struct> {
+public class StructSerializationModule extends SimpleModule {
+
+  private static final Logger LOG = LoggerFactory.getLogger(StructSerializationModule.class);
+  private static final JsonConverter jsonConverter = new JsonConverter();
 
   public StructSerializationModule() {
-    super(Struct.class);
+    super();
+    jsonConverter.configure(Collections.singletonMap("schemas.enable", false), false);
+    addSerializer(Struct.class, new StructSerializationModule.Serializer());
   }
 
-  @Override
-  public void serialize(Struct struct, JsonGenerator jsonGenerator,
-      SerializerProvider serializerProvider) throws IOException {
-    jsonGenerator.writeStartObject();
-    for (Field field: struct.schema().fields()) {
-      if (field.schema().type() == Type.STRUCT) {
-        jsonGenerator.writeStartObject();
-        serialize((Struct) struct.get(field.name()), jsonGenerator, serializerProvider);
-        jsonGenerator.writeEndObject();
-      } else {
-        jsonGenerator.writeStartObject();
-        jsonGenerator.writeObject(struct.get(field.name()));
-        jsonGenerator.writeEndObject();
-      }
+  static class Serializer extends JsonSerializer<Struct> {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Override
+    public void serialize(
+        final Struct struct,
+        final JsonGenerator jsonGenerator,
+        final SerializerProvider serializerProvider
+    ) throws IOException {
+      struct.validate();
+      jsonGenerator.writeObject(objectMapper.readTree(
+          jsonConverter.fromConnectData("", struct.schema(), struct)));
     }
-
   }
+
 }
