@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.kafka.common.serialization.Serde;
@@ -329,7 +330,7 @@ public class AggregateNode extends PlanNode {
                                                      final Schema schema) {
     final ExpressionTypeManager expressionTypeManager =
         new ExpressionTypeManager(schema, functionRegistry);
-    final List<Expression> functionArgs = internalSchema.getInternalExpressionList(
+    final List<Expression> functionArgs = internalSchema.getInternalArgsExpressionList(
         functionCall.getArguments());
     final Schema expressionType = expressionTypeManager.getExpressionSchema(functionArgs.get(0));
     final KsqlAggregateFunction aggregateFunctionInfo = functionRegistry
@@ -396,14 +397,44 @@ public class AggregateNode extends PlanNode {
           });
     }
 
-    List<Expression> getInternalExpressionList(final List<Expression> expressionList) {
-      return expressionList.stream()
-          .map(argExpression -> argExpression instanceof Literal
-                                ? argExpression
-                                : new QualifiedNameReference(
-                                    QualifiedName.of(getExpressionToInternalColumnNameMap()
-                                            .get(argExpression.toString()))))
+    List<Expression> getInternalExpressionList(final List<Expression> argExpressionList) {
+      return argExpressionList.stream()
+          .map(argExpression -> new QualifiedNameReference(
+                  QualifiedName.of(getExpressionToInternalColumnNameMap()
+                      .get(argExpression.toString()))))
           .collect(Collectors.toList());
+    }
+
+    /**
+     * Return the aggregate function arguments based on the internal expressions.
+     * Currently we support aggregate functions with at most two arguments where
+     * the second argument should be a literal.
+     * @param argExpressionList The list of parameters for the aggregate fuunction.
+     * @return The list of arguments based on the internal expressions for the aggregate function.
+     */
+    //TODO We need to generalize this implementation for aggregate functions with more than two args
+    List<Expression> getInternalArgsExpressionList(final List<Expression> argExpressionList) {
+      Objects.requireNonNull(argExpressionList, "Argument list for UDAF cannot be null.");
+      // Currently we only support aggregations on one column only
+      if (argExpressionList.size() > 2) {
+        throw new KsqlException("Currently, KSQL UDAFs can only have two arguments.");
+      }
+      final List<Expression> internalExpressionList = new ArrayList<>();
+      if (argExpressionList.isEmpty()) {
+        return internalExpressionList;
+      }
+      internalExpressionList.add(new QualifiedNameReference(
+          QualifiedName.of(getExpressionToInternalColumnNameMap()
+              .get(argExpressionList.get(0).toString())
+      )));
+      if (argExpressionList.size() == 2) {
+        if (! (argExpressionList.get(1) instanceof Literal)) {
+          throw new KsqlException("Currenltly, second argument in UDAF should be literal.");
+        }
+        internalExpressionList.add(argExpressionList.get(1));
+      }
+      return internalExpressionList;
+
     }
 
     List<Pair<String, Expression>> updateFinalSelectExpressions(
