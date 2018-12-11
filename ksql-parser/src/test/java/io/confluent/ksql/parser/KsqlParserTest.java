@@ -1211,4 +1211,17 @@ public class KsqlParserTest {
     assertThat(statements, hasSize(1));
     assertThat(statements.get(0).getStatement(), is(instanceOf(ListStreams.class)));
   }
+
+  @Test
+  public void shouldBuildSimpleCaseStatement() {
+    final String statementString =
+        "CREATE STREAM S AS SELECT CASE WHEN orderunits < 10 THEN 'small' WHEN orderunits < 100 THEN 'medium' ELSE 'large' END FROM orders;";
+    final Statement statement = KSQL_PARSER.buildAst(statementString, metaStore).get(0)
+        .getStatement();
+    assertThat(statement, instanceOf(CreateStreamAsSelect.class));
+    final Query query = ((CreateStreamAsSelect) statement).getQuery();
+    assertThat(query.getQueryBody(), instanceOf(QuerySpecification.class));
+    final QuerySpecification querySpecification = (QuerySpecification) query.getQueryBody();
+  }
+
 }

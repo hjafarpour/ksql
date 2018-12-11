@@ -50,6 +50,7 @@ import io.confluent.ksql.parser.tree.NotExpression;
 import io.confluent.ksql.parser.tree.NullLiteral;
 import io.confluent.ksql.parser.tree.QualifiedName;
 import io.confluent.ksql.parser.tree.QualifiedNameReference;
+import io.confluent.ksql.parser.tree.SearchedCaseExpression;
 import io.confluent.ksql.parser.tree.StringLiteral;
 import io.confluent.ksql.parser.tree.SubscriptExpression;
 import io.confluent.ksql.parser.tree.SymbolReference;
@@ -61,13 +62,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
 
 public class SqlToJavaVisitor {
 
-  private Schema schema;
-  private FunctionRegistry functionRegistry;
+  private final Schema schema;
+  private final FunctionRegistry functionRegistry;
 
   private final ExpressionTypeManager expressionTypeManager;
 
@@ -484,6 +486,36 @@ public class SqlToJavaVisitor {
     }
 
     @Override
+    protected Pair<String, Schema> visitSearchedCaseExpression(
+        final SearchedCaseExpression node,
+        final Boolean unmangleNames) {
+      final List<String> whenList = node.getWhenClauses()
+          .stream()
+          .map(whenClause -> process(whenClause.getOperand(), unmangleNames).getLeft())
+          .collect(Collectors.toList());
+      final List<Pair<String, Schema>> thenList = node.getWhenClauses()
+          .stream()
+          .map(whenClause -> process(whenClause.getResult(), unmangleNames))
+          .collect(Collectors.toList());
+      final String defaultValue = node.getDefaultValue().isPresent()
+          ? process(node.getDefaultValue().get(), unmangleNames).getLeft()
+          : "null";
+      final StringBuilder stringBuilder =  new StringBuilder(
+          "SearchedCasedStatementFunction.searchedCasedStatementFunction(");
+      stringBuilder.append(" ImmutableList.of( ")
+          .append(StringUtils.join(whenList, ","))
+          .append(")");
+      stringBuilder.append(", ImmutableList.of( ")
+          .append(StringUtils.join(
+              thenList.stream().map(Pair::getLeft).collect(Collectors.toList()), ","))
+          .append(")");
+      stringBuilder.append(", ")
+          .append(defaultValue)
+      .append(")");
+      return new Pair<>(stringBuilder.toString(), thenList.get(0).getRight());
+    }
+
+        @Override
     protected Pair<String, Schema> visitLikePredicate(
         final LikePredicate node,
         final Boolean unmangleNames

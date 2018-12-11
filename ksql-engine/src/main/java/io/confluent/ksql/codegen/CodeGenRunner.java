@@ -59,10 +59,12 @@ public class CodeGenRunner {
 
   public static final List<String> CODEGEN_IMPORTS = ImmutableList.of(
       "org.apache.kafka.connect.data.Struct",
+      "io.confluent.ksql.function.udf.casestatement.SearchedCasedStatementFunction",
       "java.util.HashMap",
       "java.util.Map",
       "java.util.List",
-      "java.util.ArrayList");
+      "java.util.ArrayList",
+      "com.google.common.collect.ImmutableList");
 
   private final Schema schema;
   private final FunctionRegistry functionRegistry;
