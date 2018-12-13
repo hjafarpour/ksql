@@ -500,7 +500,10 @@ public class SqlToJavaVisitor {
       final String defaultValue = node.getDefaultValue().isPresent()
           ? process(node.getDefaultValue().get(), unmangleNames).getLeft()
           : "null";
+      final String resultSchemaString =
+          SchemaUtil.getJavaType(thenList.get(0).getRight()).getCanonicalName();
       final StringBuilder stringBuilder =  new StringBuilder(
+          "(" + resultSchemaString + ")" +
           "SearchedCasedStatementFunction.searchedCasedStatementFunction(");
       stringBuilder.append(" ImmutableList.of( ")
           .append(StringUtils.join(whenList, ","))

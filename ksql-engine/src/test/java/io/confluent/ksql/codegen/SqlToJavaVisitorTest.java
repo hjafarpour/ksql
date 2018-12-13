@@ -182,4 +182,16 @@ public class SqlToJavaVisitorTest {
         .process(analysis.getWhereExpression());
     assertThat(javaExpression, equalTo("(TEST1_COL1).equals(\"foo\")"));
   }
+
+  @Test
+  public void shouldGenerateCorrectCodeForCaseStatement() {
+    final Analysis analysis = analyzeQuery(
+        "SELECT CASE WHEN orderunits < 10 THEN 'small' WHEN orderunits < 100 THEN 'medium' ELSE 'large' END FROM orders;", metaStore);
+
+    Schema orderSchema = metaStore.getSource("ORDERS").getSchema();
+
+    final String javaExpression = new SqlToJavaVisitor(orderSchema, functionRegistry)
+        .process(analysis.getSelectExpressions().get(0));
+//    assertThat(javaExpression, equalTo("(TEST1_COL1).equals(\"foo\")"));
+  }
 }

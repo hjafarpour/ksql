@@ -37,6 +37,7 @@ import io.confluent.ksql.parser.tree.LongLiteral;
 import io.confluent.ksql.parser.tree.NotExpression;
 import io.confluent.ksql.parser.tree.NullLiteral;
 import io.confluent.ksql.parser.tree.QualifiedNameReference;
+import io.confluent.ksql.parser.tree.SearchedCaseExpression;
 import io.confluent.ksql.parser.tree.StringLiteral;
 import io.confluent.ksql.parser.tree.SubscriptExpression;
 import java.util.ArrayList;
@@ -195,6 +196,14 @@ public class ExpressionTypeManager
   protected Expression visitIsNullPredicate(final IsNullPredicate node,
                                             final ExpressionTypeContext expressionTypeContext) {
     expressionTypeContext.setSchema(Schema.OPTIONAL_BOOLEAN_SCHEMA);
+    return null;
+  }
+
+  @Override
+  protected Expression visitSearchedCaseExpression(final SearchedCaseExpression node, final ExpressionTypeContext expressionTypeContext) {
+    process(node.getWhenClauses().get(0).getResult(), expressionTypeContext);
+    final Schema resultSchema = expressionTypeContext.getSchema();
+
     return null;
   }
 

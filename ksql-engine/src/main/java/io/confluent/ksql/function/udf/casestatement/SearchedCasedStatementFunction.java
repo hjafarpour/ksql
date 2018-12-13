@@ -20,10 +20,10 @@ import java.util.List;
 
 public final class SearchedCasedStatementFunction {
 
-  public static Object searchedCasedStatementFunction(
+  public static <T> T searchedCasedStatementFunction(
       final List<Boolean> whenList,
-      final List thenList,
-      final Object defaultValue) {
+      final List<T> thenList,
+      final T defaultValue) {
     for (int i = 0; i < whenList.size(); i++) {
       if (whenList.get(i)) {
         return thenList.get(i);
