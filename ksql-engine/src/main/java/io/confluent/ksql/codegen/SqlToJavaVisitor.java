@@ -501,8 +501,8 @@ public class SqlToJavaVisitor {
       final String resultSchemaString =
           SchemaUtil.getJavaType(thenList.get(0).getRight()).getCanonicalName();
       final StringBuilder stringBuilder =  new StringBuilder(
-          "(" + resultSchemaString + ")" +
-          "SearchedCasedStatementFunction.searchedCasedStatementFunction(");
+          "(" + resultSchemaString + ")"
+              + "SearchedCasedStatementFunction.searchedCasedStatementFunction(");
       stringBuilder.append(" ImmutableList.of( ")
           .append(StringUtils.join(whenList, ","))
           .append(")");
@@ -510,13 +510,11 @@ public class SqlToJavaVisitor {
           .append(StringUtils.join(
               thenList.stream().map(Pair::getLeft).collect(Collectors.toList()), ","))
           .append(")");
-      stringBuilder.append(", ")
-          .append(defaultValue)
-      .append(")");
+      stringBuilder.append(", ").append(defaultValue).append(")");
       return new Pair<>(stringBuilder.toString(), thenList.get(0).getRight());
     }
 
-        @Override
+    @Override
     protected Pair<String, Schema> visitLikePredicate(
         final LikePredicate node,
         final Boolean unmangleNames

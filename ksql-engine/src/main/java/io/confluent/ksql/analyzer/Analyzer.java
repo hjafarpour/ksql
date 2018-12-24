@@ -78,14 +78,14 @@ public class Analyzer extends DefaultTraversalVisitor<Node, AnalysisContext> {
 
   /**
    * @param sqlExpression the sql expression to analyse
-   * @param analysis      where the results are stored.
-   * @param metaStore     the metastore to use.
-   * @param topicPrefix   the prefix to use for topic names where an explicit name is not specified.
+   * @param analysis where the results are stored.
+   * @param metaStore the metastore to use.
+   * @param topicPrefix the prefix to use for topic names where an explicit name is not specified.
    */
   public Analyzer(final String sqlExpression,
-                  final Analysis analysis,
-                  final MetaStore metaStore,
-                  final String topicPrefix) {
+      final Analysis analysis,
+      final MetaStore metaStore,
+      final String topicPrefix) {
     this.sqlExpression = Objects.requireNonNull(sqlExpression, "sqlExpression");
     this.analysis = Objects.requireNonNull(analysis, "analysis");
     this.metaStore = Objects.requireNonNull(metaStore, "metaStore");
@@ -140,8 +140,8 @@ public class Analyzer extends DefaultTraversalVisitor<Node, AnalysisContext> {
 
     final StructuredDataSource intoStructuredDataSource = analysis.getInto();
     final String intoKafkaTopicName = analysis.getIntoKafkaTopicName() == null
-                                      ? topicPrefix + intoStructuredDataSource.getName()
-                                      : analysis.getIntoKafkaTopicName();
+        ? topicPrefix + intoStructuredDataSource.getName()
+        : analysis.getIntoKafkaTopicName();
 
     final KsqlTopic newIntoKsqlTopic;
     if (doCreateInto) {
@@ -256,8 +256,8 @@ public class Analyzer extends DefaultTraversalVisitor<Node, AnalysisContext> {
       throw new KsqlException(String.format(
           "%s Join criteria is not set.",
           node.getLocation().isPresent()
-          ? node.getLocation().get().toString()
-          : ""
+              ? node.getLocation().get().toString()
+              : ""
       ));
     }
     final JoinOn joinOn = (JoinOn) (node.getCriteria().get());
@@ -359,8 +359,8 @@ public class Analyzer extends DefaultTraversalVisitor<Node, AnalysisContext> {
           String.format(
               "%s : Invalid join criteria %s. Could not find a join criteria operand for %s. ",
               comparisonExpression.getLocation().isPresent()
-              ? comparisonExpression.getLocation().get().toString()
-              : "", comparisonExpression, sourceAlias
+                  ? comparisonExpression.getLocation().get().toString()
+                  : "", comparisonExpression, sourceAlias
           )
       );
     }
@@ -448,8 +448,7 @@ public class Analyzer extends DefaultTraversalVisitor<Node, AnalysisContext> {
         // expand * and T.*
         final AllColumns allColumns = (AllColumns) selectItem;
         if ((this.analysis.getFromDataSources() == null) || (
-            this.analysis.getFromDataSources().isEmpty()
-          )) {
+            this.analysis.getFromDataSources().isEmpty())) {
           throw new KsqlException("FROM clause was not resolved!");
         }
         if (analysis.getJoin() != null) {
@@ -581,7 +580,7 @@ public class Analyzer extends DefaultTraversalVisitor<Node, AnalysisContext> {
       } catch (final NumberFormatException e) {
         throw new KsqlException(
             "Invalid number of partitions in WITH clause: "
-            + node.getProperties().get(KsqlConstants.SINK_NUMBER_OF_PARTITIONS).toString());
+                + node.getProperties().get(KsqlConstants.SINK_NUMBER_OF_PARTITIONS).toString());
       }
     }
 
@@ -628,7 +627,7 @@ public class Analyzer extends DefaultTraversalVisitor<Node, AnalysisContext> {
         if (!avroSchemaFilePath.startsWith("'") && !avroSchemaFilePath.endsWith("'")) {
           throw new KsqlException(
               avroSchemaFilePath + " value is string and should be enclosed between "
-              + "\"'\".");
+                  + "\"'\".");
         }
         avroSchemaFilePath = avroSchemaFilePath.substring(1, avroSchemaFilePath.length() - 1);
       }
@@ -643,7 +642,7 @@ public class Analyzer extends DefaultTraversalVisitor<Node, AnalysisContext> {
     if (!intoTimestampColumnName.startsWith("'") && !intoTimestampColumnName.endsWith("'")) {
       throw new KsqlException(
           intoTimestampColumnName + " value is string and should be enclosed between "
-          + "\"'\".");
+              + "\"'\".");
     }
     intoTimestampColumnName = intoTimestampColumnName.substring(
         1,

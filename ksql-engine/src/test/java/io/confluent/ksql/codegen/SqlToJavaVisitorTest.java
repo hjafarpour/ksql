@@ -183,13 +183,16 @@ public class SqlToJavaVisitorTest {
 
   @Test
   public void shouldGenerateCorrectCodeForCaseStatement() {
+    // Given:
     final Analysis analysis = analyzeQuery(
         "SELECT CASE WHEN orderunits < 10 THEN 'small' WHEN orderunits < 100 THEN 'medium' ELSE 'large' END FROM orders;", metaStore);
-
     Schema orderSchema = metaStore.getSource("ORDERS").getSchema();
 
+    // When:
     final String javaExpression = new SqlToJavaVisitor(orderSchema, functionRegistry)
         .process(analysis.getSelectExpressions().get(0));
-//    assertThat(javaExpression, equalTo("(TEST1_COL1).equals(\"foo\")"));
+
+    // ThenL
+    assertThat(javaExpression, equalTo("(java.lang.String)SearchedCasedStatementFunction.searchedCasedStatementFunction( ImmutableList.of( ((((Object)(ORDERS_ORDERUNITS)) == null || ((Object)(Integer.parseInt(\"10\"))) == null) ? false : (ORDERS_ORDERUNITS < Integer.parseInt(\"10\"))),((((Object)(ORDERS_ORDERUNITS)) == null || ((Object)(Integer.parseInt(\"100\"))) == null) ? false : (ORDERS_ORDERUNITS < Integer.parseInt(\"100\")))), ImmutableList.of( \"small\",\"medium\"), \"large\")"));
   }
 }
