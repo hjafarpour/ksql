@@ -186,7 +186,7 @@ public class SqlToJavaVisitorTest {
     // Given:
     final Analysis analysis = analyzeQuery(
         "SELECT CASE WHEN orderunits < 10 THEN 'small' WHEN orderunits < 100 THEN 'medium' ELSE 'large' END FROM orders;", metaStore);
-    Schema orderSchema = metaStore.getSource("ORDERS").getSchema();
+    final Schema orderSchema = metaStore.getSource("ORDERS").getSchema();
 
     // When:
     final String javaExpression = new SqlToJavaVisitor(orderSchema, functionRegistry)
@@ -194,5 +194,20 @@ public class SqlToJavaVisitorTest {
 
     // ThenL
     assertThat(javaExpression, equalTo("(java.lang.String)SearchedCasedStatementFunction.searchedCasedStatementFunction( ImmutableList.of( ((((Object)(ORDERS_ORDERUNITS)) == null || ((Object)(Integer.parseInt(\"10\"))) == null) ? false : (ORDERS_ORDERUNITS < Integer.parseInt(\"10\"))),((((Object)(ORDERS_ORDERUNITS)) == null || ((Object)(Integer.parseInt(\"100\"))) == null) ? false : (ORDERS_ORDERUNITS < Integer.parseInt(\"100\")))), ImmutableList.of( \"small\",\"medium\"), \"large\")"));
+  }
+
+  @Test
+  public void shouldGenerateCorrectCodeForCaseStatementWithNoElse() {
+    // Given:
+    final Analysis analysis = analyzeQuery(
+        "SELECT CASE WHEN orderunits < 10 THEN 'small' WHEN orderunits < 100 THEN 'medium' END FROM orders;", metaStore);
+    final Schema orderSchema = metaStore.getSource("ORDERS").getSchema();
+
+    // When:
+    final String javaExpression = new SqlToJavaVisitor(orderSchema, functionRegistry)
+        .process(analysis.getSelectExpressions().get(0));
+
+    // ThenL
+    assertThat(javaExpression, equalTo("(java.lang.String)SearchedCasedStatementFunction.searchedCasedStatementFunction( ImmutableList.of( ((((Object)(ORDERS_ORDERUNITS)) == null || ((Object)(Integer.parseInt(\"10\"))) == null) ? false : (ORDERS_ORDERUNITS < Integer.parseInt(\"10\"))),((((Object)(ORDERS_ORDERUNITS)) == null || ((Object)(Integer.parseInt(\"100\"))) == null) ? false : (ORDERS_ORDERUNITS < Integer.parseInt(\"100\")))), ImmutableList.of( \"small\",\"medium\"), null)"));
   }
 }
